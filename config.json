@@ -1,5 +1,5 @@
 # config file
-
+                                     
     // hiscore_file: the name of the file the hiscore data will stored in
     // levels: array of each level data
     //         each level become harder when the maze become bigger

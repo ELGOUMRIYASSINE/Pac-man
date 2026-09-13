@@ -6,7 +6,7 @@ install:
 	@$(UV) sync || true
 
 run:
-	@$(UV) run $(PY) $(SRC) $(ARGS)
+	@$(UV) run $(PY) $(SRC) $(ARG)
 
 debug:
 	@$(UV) run $(PY) -m pdb $(SRC) $(ARGS) || true

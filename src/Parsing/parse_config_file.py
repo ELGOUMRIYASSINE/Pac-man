@@ -1,27 +1,26 @@
-from ..imports import dataclass
+from .parse_args import dataclass, Args
 import json
-from pathlib import Path
 from pydantic import BaseModel
 
 """
-This class implement the parsing of the config file
-given to the program and return the valid data, with
-ignoring the comments
+This class validate the json file data using pydantic
 """
-
 class ValidJson(BaseModel):
     pass
 
+
+"""
+This class get the content of the config file,
+filter and fetch the data from it, and return the valid json data
+with ignoring the comments
+"""
 @dataclass
 class ParseConfig:
 
     @property
-    def get_file_content(self):
-        pass
-
-    @property
     def parse_content(self):
-        pass
+        content = Args().get_args
+        print(content.split("\n"))
 
     @property
     def load_json(self):
