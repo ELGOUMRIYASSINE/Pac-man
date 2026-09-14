@@ -14,6 +14,7 @@ debug:
 
 clean:
 	@cleanpy . || true
+	@rm -rf .dist Valid_config.json || true
 
 lint:
 	@flake8 . || true
