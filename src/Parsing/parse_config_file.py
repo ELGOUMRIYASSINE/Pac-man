@@ -58,17 +58,38 @@ class ParseConfig:
 
     @property
     def load_json(self):
+        defaults = ValidJson().model_dump()
+        default_level = Level().model_dump()
+        data = json.loads(self._clean_content)
+        for key in ValidJson.model_fields:
+            if key not in data:
+                print(f"Warning: '{key}' is missing, using default")
+                data[key] = defaults[key]
+        if not isinstance(data.get("levels"), list):
+            print("Warning: 'levels' key itself is missing or invalid—using default")
+            data["levels"] = defaults["levels"]
+        else:
+            for i, level in enumerate(data["levels"]):
+                if not isinstance(level, dict):
+                    print(f"Warning: levels[{i}] is invalid, using default")
+                    data["levels"][i] = default_level
+                    continue
+                for key in Level.model_fields:
+                    if key not in level:
+                        print(f"Warning: levels[{i}].{key} is missing, using default")
+                        level[key] = default_level[key]
+        validated = None
         try:
-            ValidJson.model_validate_json(self._clean_content)
+            validated = ValidJson.model_validate(data)
         except ValidationError as e:
             err = ""
             for er in e.errors():
-                err += str(er["loc"]) + ":" + er["msg"]
+                err += str(er["loc"]) + ":" + er["msg"]+"\n"
             print(err)
-            defaults = ValidJson().model_dump()
             # should replace the invalids with the defaults
-        with open("Valid_config.json","w") as f:
-            json.dump(json.loads(self._clean_content), f)
+        # with open("Valid_config.json","w") as f:
+        #     json.dump(json.loads(self._clean_content), f)
+        print(validated)
 
 
 @dataclass
