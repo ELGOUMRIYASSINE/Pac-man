@@ -1,4 +1,5 @@
 SRC=pac-man.py
+FOLDER=src
 PY=python
 UV=uv 
 
@@ -17,6 +18,6 @@ clean:
 	@rm -rf .dist Valid_config.json || true
 
 lint:
-	@flake8 . || true
-	@mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs || true
+	@flake8 $(SRC) $(FOLDER) || true
+	@mypy $(SRC) $(FOLDER) --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs || true
 
