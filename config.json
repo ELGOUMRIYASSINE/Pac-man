@@ -12,10 +12,11 @@
     // level_max_time: the maximum time of each level, if it ends before the player wins, the player loses
 
 {
-    "highscore_file": 1,
+    "highscore_file": "q",
     "levels": [
         {
-            "width": -10, "height": 20
+            "height": 20,
+            "width": -10 
         },
         {
             "width":-1,

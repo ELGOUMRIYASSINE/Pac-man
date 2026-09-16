@@ -1,7 +1,7 @@
 from .parse_args import dataclass, Args
 import json
 from pydantic import BaseModel, Field, ValidationError
-from typing import List, Optional, Dict, Any
+from typing import List, Union, Dict, Any
 
 """
 This class validate the json file data using pydantic
@@ -18,7 +18,7 @@ class ValidJson(BaseModel):
     # model_config = ConfigDict(extra="forbid")
 
     highscore_file: str = Field(
-        min_length=2, max_length=20, default="score_file"
+        min_length=1, max_length=20, default="score_file"
     )
     levels: List[Level] = Field(
         default_factory=lambda: [Level(width=10, height=30) for _ in range(10)]
@@ -56,7 +56,7 @@ class ParseConfig:
         return "".join(json_content)
 
     @property
-    def load_json(self) -> Optional[Dict[str, Any] | None]:
+    def load_json(self) -> Dict[str, Any]:
         defaults = ValidJson().model_dump()
         default_level = Level().model_dump()
         data = json.loads(self._clean_content)
@@ -73,9 +73,9 @@ class ParseConfig:
                 )
                 data[key] = defaults[key]
 
-            elif key == "highscore_file" and not isinstance(data[key], str):
+            elif key == "highscore_file" and (not isinstance(data[key], str) or not data[key]):
                 print(
-                    "Warning: highscore filename should be string, using default..."
+                    "Warning: highscore filename should be none emptystring, using default..."
                 )
                 data[key] = defaults[key]
 
@@ -120,17 +120,6 @@ class ParseConfig:
                     height = 30
 
                 data["levels"][i] = {"width": width, "height": height}
-        try:
-            validated = ValidJson.model_validate(data)
-            return validated.model_dump()
-        except ValidationError as e:
-            err = ""
-            for er in e.errors():
-                err += str(er["loc"]) + ":" + er["msg"] + "\n"
-            print(err)
-            return None
+        validated = ValidJson.model_validate(data)
+        return validated.model_dump()
 
-
-@dataclass
-class Parsehighscore:
-    pass

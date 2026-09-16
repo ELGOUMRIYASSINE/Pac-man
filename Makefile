@@ -4,10 +4,11 @@ PY=python
 UV=uv 
 
 install:
-	@$(UV) sync || true
+	@$(UV) sync --active || true
+	
 
 run:
-	@$(UV) run $(PY) $(SRC) $(ARG)
+	@$(UV) run $(PY) $(SRC) $(ARG) || true
 
 debug:
 	@$(UV) run $(PY) -m pdb $(SRC) $(ARGS) || true
@@ -15,7 +16,7 @@ debug:
 
 clean:
 	@cleanpy . || true
-	@rm -rf .dist Valid_config.json || true
+	@rm -rf .dist || true
 
 lint:
 	@flake8 $(SRC) $(FOLDER) || true
