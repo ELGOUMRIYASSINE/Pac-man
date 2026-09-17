@@ -24,3 +24,4 @@ class Args:
                 None, 'Error: wrong file name (should be "config.json")'
             )
         return path_file.read_text(encoding="utf-8")
+    
