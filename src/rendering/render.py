@@ -16,7 +16,7 @@ class Render:
         pygame.display.set_caption('Pacman')
 
         # Load and scale the background image ONCE before the loop starts
-        bg_image = pygame.image.load("../assets/f9c31768-0380-4802-9bbb-abb5470726ea.jpeg").convert()
+        bg_image = pygame.image.load("../assets/Gemini_Generated_Image_60wua360wua360wu.jpeg").convert()
         bg_image = pygame.transform.scale(bg_image, (1200, 700))
 
         run = True
