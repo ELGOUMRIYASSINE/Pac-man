@@ -27,5 +27,5 @@ class MazeIntegration:
                     perfect=False,
                 )
         except Exception:
-            raise ValueError(f"Error: amze generation failed at level {level}")
+            raise ValueError(f"Error: maze generation failed at level {level}")
         return maze_gen

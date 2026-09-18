@@ -10,5 +10,6 @@ dependencies = [
     "mazegenerator>=1.2.1",
     "pathlib>=1.0.1",
     "pydantic>=2.13.5",
+    "pygame>=2.6.1",
 ]
 

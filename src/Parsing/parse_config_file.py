@@ -59,7 +59,11 @@ class ParseConfig:
     def load_json(self) -> Dict[str, Any]:
         defaults = ValidJson().model_dump()
         default_level = Level().model_dump()
-        data = json.loads(self._clean_content)
+        try:
+            data = json.loads(self._clean_content)
+        except json.JSONDecodeError:
+            print("Warning: invalid config.json format, using default...")
+            data = defaults
 
         for key in ValidJson.model_fields:
 
@@ -122,4 +126,3 @@ class ParseConfig:
                 data["levels"][i] = {"width": width, "height": height}
         validated = ValidJson.model_validate(data)
         return validated.model_dump()
-

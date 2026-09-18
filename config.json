@@ -19,7 +19,7 @@
             "width": -10 
         },
         {
-            "width":-1,
+            "width":,
             "height": 20
         },
         {
@@ -58,5 +58,5 @@
     "player_lives":3,
     "pacgum_points":-13,
     "supergum_points":37,
-    "gost_points":-8, "helo":25
+    "gost_points":65
 }
