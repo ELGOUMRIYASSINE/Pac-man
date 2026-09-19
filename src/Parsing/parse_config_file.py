@@ -17,13 +17,13 @@ class ValidJson(BaseModel):
     # this forbid to add extra params to the config file
     # model_config = ConfigDict(extra="forbid")
 
-    highscore_file: str = Field(
-        min_length=1, max_length=20, default="score_file"
-    )
+    # highscore_file: str = Field(
+    #     min_length=1, max_length=20, default="score_file"
+    # )
     levels: List[Level] = Field(
-        default_factory=lambda: [Level(width=10, height=30) for _ in range(10)]
+        default_factory=lambda: [Level(width=25, height=20) for _ in range(10)]
     )
-    player_lives: int = Field(gt=0, default=3)
+    player_lives: int = Field(gt=0, default=3, le=10)
     pacgum_points: int = Field(gt=0, default=13)
     supergum_points: int = Field(gt=0, default=37)
     gost_points: int = Field(gt=0, default=42)
@@ -70,18 +70,22 @@ class ParseConfig:
             if key not in data:
                 print(f"Warning: '{key}' is missing, using default...")
                 data[key] = defaults[key]
-
+            elif key == "player_lives" and data[key] > 10:
+                print(
+                    f"Warning: player_lives should be less than 10, using default..."
+                )
+                data[key] = defaults[key]
             elif key not in ["highscore_file", "levels"] and data[key] < 1:
                 print(
                     f"Warning: {key} -> {data[key]} invalid, using default..."
                 )
                 data[key] = defaults[key]
 
-            elif key == "highscore_file" and (not isinstance(data[key], str) or not data[key]):
-                print(
-                    "Warning: highscore filename should be none emptystring, using default..."
-                )
-                data[key] = defaults[key]
+            # elif key == "highscore_file" and (not isinstance(data[key], str) or not data[key]):
+            #     print(
+            #         "Warning: highscore filename should be none emptystring, using default..."
+            #     )
+            #     data[key] = defaults[key]
 
         if not isinstance(data.get("levels"), list):
             print(
@@ -99,30 +103,31 @@ class ParseConfig:
 
                 width = level.get("width", None)
                 if not width:
-                    width = 10
+                    width = 25
                     print(
                         f"Warning: levels[{i}].width is missing, using default..."
                     )
 
-                if width < 1 or width > 90:
+                if width < 1 or width > 900:
                     print(
                         f"Warning: levels[{i}].width value invalid, using default..."
                     )
-                    width = 10
+                    width = 25
 
                 height = level.get("height", None)
                 if not height:
-                    height = 30
+                    height = 20
                     print(
                         f"Warning: levels[{i}].height is missing, using default..."
                     )
 
-                if height < 1 or height > 90:
+                if height < 1 or height > 900:
                     print(
                         f"Warning: levels[{i}].height value invalid, using default..."
                     )
-                    height = 30
+                    height = 20
 
                 data["levels"][i] = {"width": width, "height": height}
         validated = ValidJson.model_validate(data)
+        # model_dump make the output of model validate (basemodel object) a dictionnary
         return validated.model_dump()

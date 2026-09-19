@@ -1,8 +1,8 @@
 from src.Parsing.parse_config_file import ParseConfig
 from src.Maze.each_level_maze import LevelMaze
-from src.Parsing.parse_highscore import Parsehighscore
 from src.Highscore_system.get_highscore import HighScore
-from pathlib import Path
+from src.GameEngine.player import Player
+
 
 if __name__ == "__main__":
     # try:
@@ -13,8 +13,10 @@ if __name__ == "__main__":
     # get the list of levels mazes as objects
     mazes = LevelMaze().get_mazes_list(data)
 
+
     # should get the score from the end of the game and replace 10 by it
-    data = HighScore().top_10_scores(10)
+    Player().initial_position(mazes, 0)
+    # data = HighScore().top_10_scores(10)
     
 # except Exception as e:
 #     err = ""

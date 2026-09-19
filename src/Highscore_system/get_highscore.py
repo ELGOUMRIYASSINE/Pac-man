@@ -3,6 +3,10 @@ from typing import Dict
 from ..Parsing.parse_highscore import Parsehighscore, json
 
 
+"""
+This class 
+"""
+
 @dataclass
 class HighScore:
 

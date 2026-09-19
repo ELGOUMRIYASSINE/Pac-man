@@ -2,7 +2,7 @@ from .parse_args import dataclass
 from pathlib import Path
 import json
 from pydantic import BaseModel, Field, ValidationError
-from typing import Any
+from typing import Any, Dict
 
 
 class ValidScores(BaseModel):
@@ -13,7 +13,7 @@ class ValidScores(BaseModel):
 @dataclass
 class Parsehighscore:
 
-    def get_name(self, scores) -> str:
+    def get_name(self, scores: Dict[str, int]) -> str:
         user: str = input("Enter your name!\n")
         if user in scores.keys():
             print("Error: player-name already exists, enter diffrent name")
@@ -78,4 +78,3 @@ class Parsehighscore:
                 }
                 data = json.loads(json.dumps(score))
         return data
-
