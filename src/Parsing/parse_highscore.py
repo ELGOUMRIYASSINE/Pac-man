@@ -13,17 +13,19 @@ class ValidScores(BaseModel):
 @dataclass
 class Parsehighscore:
 
-    @property
-    def get_name(self) -> str:
+    def get_name(self, scores) -> str:
         user: str = input("Enter your name!\n")
+        if user in scores.keys():
+            print("Error: player-name already exists, enter diffrent name")
+            self.get_name(scores)
         if len(user) > 10 or len(user) < 1:
             print("Error: the name should be in range of 1 and 10 characters")
-            self.get_name
+            self.get_name(scores)
         elif not user.replace(" ", "").isalnum():
             print(
                 "Error: your name should be composed of  alphanumeric and spaces only"
             )
-            self.get_name
+            self.get_name(scores)
         return user
 
     @property

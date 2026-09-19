@@ -6,11 +6,16 @@ from pathlib import Path
 
 if __name__ == "__main__":
     # try:
+
+    # get data from the config file
     data = ParseConfig().load_json
-    maze = LevelMaze().get_mazes_list(data)
+
+    # get the list of levels mazes as objects
+    mazes = LevelMaze().get_mazes_list(data)
+
+    # should get the score from the end of the game and replace 10 by it
     data = HighScore().top_10_scores(10)
-    # scores = Path("./score.json").read_text(encoding="utf-8")
-    # HighScore().top_10_scores(name, 10, {})
+    
 # except Exception as e:
 #     err = ""
 #     for er in e.errors():
