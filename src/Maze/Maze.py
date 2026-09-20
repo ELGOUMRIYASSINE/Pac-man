@@ -33,19 +33,14 @@ class Maze:
             cells = []
             for m in range(width):
                 cell = Cell((n, m))
-                if m & Directions.N:
+                if maze.maze[n][m] & Directions.N:
                     cell.North = True
-                if m & Directions.E:
+                if maze.maze[n][m] & Directions.E:
                     cell.Est = True
-                if m & Directions.S:
+                if maze.maze[n][m] & Directions.S:
                     cell.South = True
-                if m & Directions.W:
+                if maze.maze[n][m] & Directions.W:
                     cell.West = True
                 cells.append(cell)
             maze_obj.append(cells)
         return maze_obj
-
-    
-
-
-                

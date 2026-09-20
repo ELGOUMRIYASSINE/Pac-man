@@ -7,4 +7,4 @@ class Player:
         maze: MazeGenerator = mazes[level]
         maze.generate
         print(maze.maze)
-        
+
