@@ -1,28 +1,22 @@
 import pygame
 
-
 class MazeRender:
-    def __init__(self, maze_binary, screen):
-        self.maze_binary = maze_binary
+    def __init__(self, maze, screen):
+        self.maze_binary = maze
         self.cell_size = 40
-        self.row = len(maze_binary)
-        self.col = len(maze_binary[0])
         self.screen = screen
-
     def draw(self):
-        for row_index, row in enumerate(self.maze_binary):
-            for col_index, cell in enumerate(row):
-                x = col_index * self.cell_size
-                y = row_index * self.cell_size
-
-                if cell.West:
-                    pygame.draw.line(self.screen, (255, 255, 255), (x, y), (x, y + self.cell_size), 2)
-
-                if cell.North:
+        TOP, RIGHT, BOTTOM, LEFT = 1, 2, 4, 8
+        for row in range(len(self.maze_binary)):
+            for col in range(len(self.maze_binary[0])):
+                val = self.maze_binary[row][col]
+                x = col * self.cell_size
+                y = row * self.cell_size
+                if val & TOP:
                     pygame.draw.line(self.screen, (255, 255, 255), (x, y), (x + self.cell_size, y), 2)
-
-                if cell.Est:
-                    pygame.draw.line(self.screen, (255, 255, 255), (x + self.cell_size, y), (x + self.cell_size, y + self.cell_size), 2)
-
-                if cell.South:
+                if val & BOTTOM:
                     pygame.draw.line(self.screen, (255, 255, 255), (x, y + self.cell_size), (x + self.cell_size, y + self.cell_size), 2)
+                if val & LEFT:
+                    pygame.draw.line(self.screen, (255, 255, 255), (x, y), (x, y + self.cell_size), 2)
+                if val & RIGHT:
+                    pygame.draw.line(self.screen, (255, 255, 255), (x + self.cell_size, y), (x + self.cell_size, y + self.cell_size), 2)

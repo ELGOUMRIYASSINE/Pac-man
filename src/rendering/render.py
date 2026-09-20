@@ -9,10 +9,9 @@ class Render:
     def __init__(self):
         pygame.init()
         self.maze = MazeGenerator()
-        self.maze_binary = Maze.creat_cells(self.maze)
-        screen = pygame.display.set_mode((1200, 700))
-        self.entry_page = EntryFace(screen, 700, 1200)
-        self.maze_draw = MazeRender(self.maze_binary, screen)
+        self.screen = pygame.display.set_mode((1200, 700))
+        self.entry_page = EntryFace(self.screen, 700, 1200)
+        self.maze_draw = MazeRender(self.maze.maze, self.screen)
 
     # run pygame loop and call the entry page draw function to show the first page
     def entry(self):
@@ -33,14 +32,20 @@ class Render:
             # self.entry_page.screen.blit(bg_image, (0, 0))
             
             # Draw remaining UI elements over the background
-            # self.entry_page.draw()
+            # self.entry_page.draw() screen.fill((0, 0, 0))
+            self.screen.fill((0, 0, 0))
             self.maze_draw.draw()
             pygame.display.flip()
-            pygame.display.update()
+            # pygame.display.update()
             clock.tick(60)
             
         pygame.quit()
 
 ren = Render()
 ren.entry()
+
+
+
+
+
 
