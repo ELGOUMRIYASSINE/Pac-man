@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 
     # should get the score from the end of the game and replace 10 by it
-    Player().initial_position(mazes, 0)
+
     # data = HighScore().top_10_scores(10)
     
 # except Exception as e:
