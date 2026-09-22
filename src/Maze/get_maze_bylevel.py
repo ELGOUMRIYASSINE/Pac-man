@@ -10,11 +10,11 @@ those objects represent a maze object for each level
 
 @dataclass
 class LevelMaze:
-
+    
     @classmethod
-    def get_maze_bylevel(cls, level) -> MazeGenerator:
-            height = MetaData().get_height(level)
-            width = MetaData().get_width(level)
+    def get_maze_bylevel(cls, level, metadata) -> MazeGenerator:
+            height = metadata.get_height(level)
+            width = metadata.get_width(level)
             try:
                 if level == 0:
                     maze_gen = MazeGenerator(
