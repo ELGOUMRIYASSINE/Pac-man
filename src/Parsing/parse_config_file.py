@@ -70,9 +70,9 @@ class ParseConfig:
             if key not in data:
                 print(f"Warning: '{key}' is missing, using default...")
                 data[key] = defaults[key]
-            elif key == "player_lives" and data[key] > 10:
+            elif key == "player_lives" and data[key] > 3:
                 print(
-                    f"Warning: player_lives should be less than 10, using default..."
+                    f"Warning: player_lives should be less than 4 and more than 0, using default..."
                 )
                 data[key] = defaults[key]
             elif key not in ["highscore_file", "levels"] and data[key] < 1:
