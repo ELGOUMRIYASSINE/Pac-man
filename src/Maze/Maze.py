@@ -1,9 +1,9 @@
 from enum import IntEnum
 from dataclasses import dataclass
-from typing import Tuple, List
+from typing import Tuple
 from mazegenerator import MazeGenerator
 from .get_maze_bylevel import LevelMaze
-from ..GameEngine.player import Player
+from ..metadata import MetaData
 
 
 class Directions(IntEnum):
@@ -29,11 +29,18 @@ class Cell:
 class Maze:
 
     @classmethod
+    def _creat_player(cls, level, metadata) -> Tuple[int,int]:
+        return (
+            metadata.get_height(level) // 2,
+            metadata.get_width(level) // 2,
+        )
+
+    @classmethod
     def creat_cells(cls, level:int, data):
         maze: MazeGenerator = LevelMaze.get_maze_bylevel(level, data)
         height:int = maze._height
         width:int = maze._width
-        player_position: Tuple[int,int] = Player.creat_player(level, data)
+        player_position: Tuple[int,int] = cls._creat_player(level, data)
         maze_obj = []
         for n in range(height):
             cells = []
@@ -42,19 +49,24 @@ class Maze:
                 cell = Cell((n, m))
                 if (n, m) == player_position:
                     cell.player_init_position = True
+                    
                 else:
                     if m == 0 and n == 0:
                         cell.supgum = True
                         cell.ghost = True
+                        
                     elif m == width - 1 and n == 0:
                         cell.supgum = True
                         cell.ghost = True
+                        
                     elif m == 0 and n == height -1:
                         cell.supgum = True
                         cell.ghost = True
+                        
                     elif m == width -1 and n == height - 1:
                         cell.supgum = True
                         cell.ghost = True
+                        
                 if maze.maze[n][m] & Directions.N:
                     cell.North = True
                     closed += 1
@@ -68,8 +80,9 @@ class Maze:
                     cell.West = True
                     closed += 1
                 if closed !=4  and not cell.supgum and not cell.player_init_position:
-                                cell.gum = True
+                    cell.gum = True
+                    
                 cells.append(cell)
+            # 
             maze_obj.append(cells)
-        
         return maze_obj

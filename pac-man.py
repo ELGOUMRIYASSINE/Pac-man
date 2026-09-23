@@ -15,8 +15,7 @@ if __name__ == "__main__":
 
 
     #maze of one level
-    maze = Maze.creat_cells(0, data)
-
+    maze = Maze.creat_cells(2, data)
 
 # except Exception as e:
 #     err = ""
