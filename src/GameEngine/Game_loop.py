@@ -78,7 +78,8 @@ class GameLoop:
 
             # Draw the background image instead of clearing with solid black
             self.screen.fill((0, 0, 0))
-            self.maze_draw = MazeRender(maze, self.screen)
+            maze_draw = MazeRender(maze, self.screen)
+            maze_draw.draw()
             pygame.display.flip()
             # pygame.display.update()
             clock.tick(60)
