@@ -14,12 +14,7 @@ class Level(BaseModel):
 
 
 class ValidJson(BaseModel):
-    # this forbid to add extra params to the config file
-    # model_config = ConfigDict(extra="forbid")
 
-    # highscore_file: str = Field(
-    #     min_length=1, max_length=20, default="score_file"
-    # )
     levels: List[Level] = Field(
         default_factory=lambda: [Level(width=25, height=20) for _ in range(10)]
     )
@@ -80,12 +75,6 @@ class ParseConfig:
                     f"Warning: {key} -> {data[key]} invalid, using default..."
                 )
                 data[key] = defaults[key]
-
-            # elif key == "highscore_file" and (not isinstance(data[key], str) or not data[key]):
-            #     print(
-            #         "Warning: highscore filename should be none emptystring, using default..."
-            #     )
-            #     data[key] = defaults[key]
 
         if not isinstance(data.get("levels"), list):
             print(

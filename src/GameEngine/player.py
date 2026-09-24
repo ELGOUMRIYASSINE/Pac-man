@@ -19,7 +19,6 @@ class Player:
 
 class MovePlayer:
     def move_player(self, move, player:Player, data:MetaData, maze:List[List[Cell]])->None:
-        # i have to init player object once
         if move == "UP":
             if (
                 player.positiony - 1 >= 0
