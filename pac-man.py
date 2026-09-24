@@ -13,9 +13,10 @@ if __name__ == "__main__":
 
     # get the list of levels mazes as objects
 
+    # maze of one level
+    
+    
 
-    #maze of one level
-    maze = Maze.creat_cells(2, data)
 
 # except Exception as e:
 #     err = ""

@@ -29,44 +29,42 @@ class Cell:
 class Maze:
 
     @classmethod
-    def _creat_player(cls, level, metadata) -> Tuple[int,int]:
-        return (
-            metadata.get_height(level) // 2,
-            metadata.get_width(level) // 2,
-        )
+    def creat_cells(cls, level: int, data:MetaData, player_position: Tuple[int, int]):
 
-    @classmethod
-    def creat_cells(cls, level:int, data):
         maze: MazeGenerator = LevelMaze.get_maze_bylevel(level, data)
         height:int = maze._height
         width:int = maze._width
-        player_position: Tuple[int,int] = cls._creat_player(level, data)
         maze_obj = []
+        score:int = 0
+
         for n in range(height):
             cells = []
             closed = 0
             for m in range(width):
                 cell = Cell((n, m))
                 if (n, m) == player_position:
-                    cell.player_init_position = True
-                    
+                    cell.player_init_position = True 
                 else:
                     if m == 0 and n == 0:
                         cell.supgum = True
                         cell.ghost = True
-                        
+                        score += data.get_supgum_points()
+
                     elif m == width - 1 and n == 0:
                         cell.supgum = True
                         cell.ghost = True
-                        
+                        score += data.get_supgum_points()
+
                     elif m == 0 and n == height -1:
                         cell.supgum = True
                         cell.ghost = True
-                        
+                        score += data.get_supgum_points()
+
                     elif m == width -1 and n == height - 1:
                         cell.supgum = True
                         cell.ghost = True
-                        
+                        score += data.get_supgum_points()
+
                 if maze.maze[n][m] & Directions.N:
                     cell.North = True
                     closed += 1
@@ -81,8 +79,8 @@ class Maze:
                     closed += 1
                 if closed !=4  and not cell.supgum and not cell.player_init_position:
                     cell.gum = True
-                    
+                    score += data.get_pacgum_points()
                 cells.append(cell)
-            # 
+
             maze_obj.append(cells)
-        return maze_obj
+        return maze_obj, score

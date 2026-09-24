@@ -21,3 +21,4 @@ class MetaData:
 
     def get_ghostpoint(self):
         return self.data["gost_points"]
+    
