@@ -10,9 +10,16 @@ class Ghost:
     eaten: bool = False
     id:int = 0
 
-    def move_ghost(self, player:Player, maze:List[Cell]):
-        y = player.positiony
-        x = player.positionx
-        # if maze[y][x].Est 
-        dist = abs(self.position[0] - y) + abs(self.position[1] - x)
+    # def move_ghost(self, player:Player, maze:List[List[Cell]]):
+    #     y = player.positiony
+    #     x = player.positionx
+    #     if maze[y][x].Est :
+
+    #     elif maze[y][x].West:
+
+    #     elif maze[y][x].North:
+
+    #     elif maze[y][x].South:
+
+    #     dist = abs(self.position[0] - y) + abs(self.position[1] - x)
 

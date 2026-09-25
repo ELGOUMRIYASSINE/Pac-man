@@ -48,7 +48,7 @@ class GameLoop:
                 # initialisation ========================================================================
                 player_pos = (data.get_height(level) // 2, data.get_width(level) // 2)
                 maze, req_score = Maze.creat_cells(level, data, player_pos)
-                print(maze)
+                print(maze, "\n\n\n")
                 player = Player(positiony=player_pos[0], positionx=player_pos[1], required_score=req_score, position=player_pos)
                 moving = MovePlayer()
                 # moving========================================================================

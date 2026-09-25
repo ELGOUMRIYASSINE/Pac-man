@@ -22,7 +22,7 @@ class MovePlayer:
         if move == "UP":
             if (
                 player.positiony - 1 >= 0
-                and not maze[player.positiony -1][player.positionx].North
+                and not maze[player.positiony][player.positionx].North
             ):
                 player.positiony -= 1
                 player.position = (player.positiony, player.positionx)
@@ -38,7 +38,7 @@ class MovePlayer:
         # -----------------------------------------------------------------------------
         elif move == "DOWN":
             # i have to init level outside
-            if player.positiony + 1 < data.get_height(player.level) and not maze[player.positiony + 1][player.positionx].South:
+            if player.positiony + 1 < data.get_height(player.level) and not maze[player.positiony][player.positionx].South:
                 player.positiony += 1
                 player.position = (player.positiony, player.positionx)
                 if maze[player.positiony][player.positionx].gum:
@@ -54,7 +54,7 @@ class MovePlayer:
         elif move == "LEFT":
             if (
                 player.positionx - 1 >= 0
-                and not maze[player.positiony][player.positionx - 1].West
+                and not maze[player.positiony][player.positionx].West
             ):
                 player.positionx -= 1
                 player.position = (player.positiony, player.positionx)
@@ -69,7 +69,7 @@ class MovePlayer:
                 player.can_move = False
         # --------------------------------------------------------------------------------
         elif move == "RIGHT":
-            if player.positionx + 1 < data.get_width(player.level) and not maze[player.positiony][player.positionx + 1].Est:
+            if player.positionx + 1 < data.get_width(player.level) and not maze[player.positiony][player.positionx].Est:
                 player.positionx += 1
                 player.position = (player.positiony, player.positionx)
                 if maze[player.positiony][player.positionx].gum:
