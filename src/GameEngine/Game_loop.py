@@ -8,7 +8,7 @@ class GameLoop:
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((1200, 700))
+        self.screen = pygame.display.set_mode((2300, 1400))
         self.entry_page = EntryFace(self.screen, 700, 1200)
 
     def handle_event(self, event):
