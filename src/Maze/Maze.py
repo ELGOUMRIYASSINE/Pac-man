@@ -2,6 +2,9 @@ from enum import IntEnum
 from dataclasses import dataclass
 from typing import Tuple
 from mazegenerator import MazeGenerator
+from .get_maze_bylevel import LevelMaze
+from ..metadata import MetaData
+
 
 class Directions(IntEnum):
     N=1
@@ -18,34 +21,66 @@ class Cell:
     West: bool = False
     supgum:bool = False
     gum:bool = False
-    player:bool = False
+    player_init_position:bool = False
     ghost:bool = False
+    has_player:bool = False
 
 @dataclass
 class Maze:
 
     @classmethod
-    def creat_cells(cls, maze:MazeGenerator):
-        height = maze._height
-        width = maze._width
+    def creat_cells(cls, level: int, data:MetaData, player_position: Tuple[int, int]):
+
+        maze: MazeGenerator = LevelMaze.get_maze_bylevel(level, data)
+        height:int = maze._height
+        width:int = maze._width
         maze_obj = []
+        score:int = 0
+
         for n in range(height):
             cells = []
+            closed = 0
             for m in range(width):
                 cell = Cell((n, m))
-                if m & Directions.N:
+                if (n, m) == player_position:
+                    cell.player_init_position = True 
+                else:
+                    if m == 0 and n == 0:
+                        cell.supgum = True
+                        cell.ghost = True
+                        score += data.get_supgum_points()
+
+                    elif m == width - 1 and n == 0:
+                        cell.supgum = True
+                        cell.ghost = True
+                        score += data.get_supgum_points()
+
+                    elif m == 0 and n == height -1:
+                        cell.supgum = True
+                        cell.ghost = True
+                        score += data.get_supgum_points()
+
+                    elif m == width -1 and n == height - 1:
+                        cell.supgum = True
+                        cell.ghost = True
+                        score += data.get_supgum_points()
+
+                if maze.maze[n][m] & Directions.N:
                     cell.North = True
-                if m & Directions.E:
+                    closed += 1
+                if maze.maze[n][m] & Directions.E:
                     cell.Est = True
-                if m & Directions.S:
+                    closed += 1
+                if maze.maze[n][m] & Directions.S:
                     cell.South = True
-                if m & Directions.W:
+                    closed += 1
+                if maze.maze[n][m] & Directions.W:
                     cell.West = True
+                    closed += 1
+                if closed !=4  and not cell.supgum and not cell.player_init_position:
+                    cell.gum = True
+                    score += data.get_pacgum_points()
                 cells.append(cell)
+
             maze_obj.append(cells)
-        return maze_obj
-
-    
-
-
-                
+        return maze_obj, score

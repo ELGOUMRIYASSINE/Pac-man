@@ -1,51 +1,48 @@
-from mazegenerator.mazegenerator import MazeGenerator 
 import pygame
-from rendering.entry_page.entry import EntryFace
-from Maze.Maze import Maze
-from rendering.maze.maze_render import MazeRender
-
-class Render:
-
-    def __init__(self):
-        pygame.init()
-        self.maze = MazeGenerator()
-        self.screen = pygame.display.set_mode((1200, 700))
-        self.entry_page = EntryFace(self.screen, 700, 1200)
-        self.maze_draw = MazeRender(self.maze.maze, self.screen)
-
-    # run pygame loop and call the entry page draw function to show the first page
-    def entry(self):
-        pygame.display.set_caption('Pacman')
-        # Load and scale the background image ONCE before the loop starts
-        bg_image = pygame.image.load("../assets/entry_page.jpeg").convert()
-        # bg_image = pygame.transform.scale(bg_image, (1200, 700))
-
-        run = True
-        clock = pygame.time.Clock()
-        while run:
-            pygame.time.delay(10)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-            
-            # Draw the background image instead of clearing with solid black
-            # self.entry_page.screen.blit(bg_image, (0, 0))
-            
-            # Draw remaining UI elements over the background
-            # self.entry_page.draw() screen.fill((0, 0, 0))
-            self.screen.fill((0, 0, 0))
-            self.maze_draw.draw()
-            pygame.display.flip()
-            # pygame.display.update()
-            clock.tick(60)
-            
-        pygame.quit()
-
-ren = Render()
-ren.entry()
 
 
+class MazeRender:
+    def __init__(self, maze, screen):
+        self.maze_binary = maze
+        self.cell_size = 40
+        self.screen = screen
 
-
-
-
+    def draw(self):
+        TOP, RIGHT, BOTTOM, LEFT = 1, 2, 4, 8
+        for row in range(len(self.maze_binary)):
+            for col in range(len(self.maze_binary[0])):
+                val = self.maze_binary[row][col]
+                x = col * self.cell_size
+                y = row * self.cell_size
+                if val & TOP:
+                    pygame.draw.line(
+                        self.screen,
+                        (255, 255, 255),
+                        (x, y),
+                        (x + self.cell_size, y),
+                        2,
+                    )
+                if val & BOTTOM:
+                    pygame.draw.line(
+                        self.screen,
+                        (255, 255, 255),
+                        (x, y + self.cell_size),
+                        (x + self.cell_size, y + self.cell_size),
+                        2,
+                    )
+                if val & LEFT:
+                    pygame.draw.line(
+                        self.screen,
+                        (255, 255, 255),
+                        (x, y),
+                        (x, y + self.cell_size),
+                        2,
+                    )
+                if val & RIGHT:
+                    pygame.draw.line(
+                        self.screen,
+                        (255, 255, 255),
+                        (x + self.cell_size, y),
+                        (x + self.cell_size, y + self.cell_size),
+                        2,
+                    )

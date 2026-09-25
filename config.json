@@ -55,7 +55,7 @@
             "height": 50
         }
     ],
-    "player_lives":-300,
+    "player_lives":,
     "pacgum_points":-13,
     "supergum_points":37,
     "gost_points":65

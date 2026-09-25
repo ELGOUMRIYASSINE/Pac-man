@@ -3,12 +3,10 @@ name = "pac-man"
 version = "0.1.0"
 description = "Reimplementing the original Pac-Man game"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13,<3.14"
 dependencies = [
-    "argparse>=1.4.0",
     "cleanpy>=0.5.1",
     "mazegenerator>=1.2.1",
-    "pathlib>=1.0.1",
     "pydantic>=2.13.5",
     "pygame>=2.6.1",
 ]
