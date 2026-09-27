@@ -80,6 +80,7 @@ class GameLoop:
             self.screen.fill((0, 0, 0))
             maze_draw = MazeRender(maze, self.screen)
             maze_draw.draw()
+            # self.entry_page.draw()
             pygame.display.flip()
             # pygame.display.update()
             clock.tick(60)

@@ -116,7 +116,7 @@ class ParseConfig:
                     )
                     height = 20
 
-                data["levels"][i] = {"width": width, "height": height}
+                data["levels"][i] = {"width": 15, "height": 15}
         validated = ValidJson.model_validate(data)
         # model_dump make the output of model validate (basemodel object) a dictionnary
         return validated.model_dump()

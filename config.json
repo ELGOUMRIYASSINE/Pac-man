@@ -15,44 +15,44 @@
     // "highscore_file": "q",
     "levels": [
         {
-            "height": 15,
-            "width":14
+            "height": 7,
+            "width":7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         },
         {
-            "width":60,
-            "height": 50
+            "width":7,
+            "height": 7
         }
     ],
     "player_lives":,
