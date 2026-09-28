@@ -1,14 +1,14 @@
 from .player import Player, MovePlayer, Maze
 import pygame
 from ..rendering.entry_page.entry import EntryFace
-from ..rendering.render import MazeRender
+from ..rendering.maze_render import MazeRender
 from pathlib import Path
 
 class GameLoop:
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((2300, 1400))
+        self.screen = pygame.display.set_mode((1200, 740))
         self.entry_page = EntryFace(self.screen, 700, 1200)
 
     def handle_event(self, event):
@@ -77,6 +77,7 @@ class GameLoop:
             # drawing all
 
             # Draw the background image instead of clearing with solid black
+            # self.screen.fill((255, 255, 255))
             self.screen.fill((0, 0, 0))
             maze_draw = MazeRender(maze, self.screen)
             maze_draw.draw()
