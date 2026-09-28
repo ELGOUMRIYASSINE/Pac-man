@@ -39,8 +39,8 @@ class Maze:
 
         for n in range(height):
             cells = []
-            closed = 0
             for m in range(width):
+                closed = 0
                 cell = Cell((n, m))
                 if (n, m) == player_position:
                     cell.player_init_position = True 
