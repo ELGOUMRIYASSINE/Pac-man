@@ -24,8 +24,10 @@ class MovePlayer:
                 player.positiony - 1 >= 0
                 and not maze[player.positiony][player.positionx].North
             ):
+                maze[player.positiony][player.positionx].has_player = False
                 player.positiony -= 1
                 player.position = (player.positiony, player.positionx)
+                maze[player.positiony][player.positionx].has_player = True
                 if maze[player.positiony][player.positionx].gum:
                     player.score += data.get_pacgum_points()
                     maze[player.positiony][player.positionx].gum = False
@@ -39,7 +41,9 @@ class MovePlayer:
         elif move == "DOWN":
             # i have to init level outside
             if player.positiony + 1 < data.get_height(player.level) and not maze[player.positiony][player.positionx].South:
+                maze[player.positiony][player.positionx].has_player = False
                 player.positiony += 1
+                maze[player.positiony][player.positionx].has_player = True
                 player.position = (player.positiony, player.positionx)
                 if maze[player.positiony][player.positionx].gum:
                     player.score += data.get_pacgum_points()
@@ -56,7 +60,9 @@ class MovePlayer:
                 player.positionx - 1 >= 0
                 and not maze[player.positiony][player.positionx].West
             ):
+                maze[player.positiony][player.positionx].has_player = False
                 player.positionx -= 1
+                maze[player.positiony][player.positionx].has_player = True
                 player.position = (player.positiony, player.positionx)
                 if maze[player.positiony][player.positionx].gum:
                     player.score += data.get_pacgum_points()
@@ -70,7 +76,9 @@ class MovePlayer:
         # --------------------------------------------------------------------------------
         elif move == "RIGHT":
             if player.positionx + 1 < data.get_width(player.level) and not maze[player.positiony][player.positionx].Est:
+                maze[player.positiony][player.positionx].has_player = False
                 player.positionx += 1
+                maze[player.positiony][player.positionx].has_player = True
                 player.position = (player.positiony, player.positionx)
                 if maze[player.positiony][player.positionx].gum:
                     player.score += data.get_pacgum_points()

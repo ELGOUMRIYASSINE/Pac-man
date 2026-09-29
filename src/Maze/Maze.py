@@ -21,7 +21,6 @@ class Cell:
     West: bool = False
     supgum:bool = False
     gum:bool = False
-    player_init_position:bool = False
     ghost:bool = False
     has_player:bool = False
 
@@ -43,7 +42,7 @@ class Maze:
                 closed = 0
                 cell = Cell((n, m))
                 if (n, m) == player_position:
-                    cell.player_init_position = True 
+                    cell.has_player = True
                 else:
                     if m == 0 and n == 0:
                         cell.supgum = True
@@ -77,7 +76,7 @@ class Maze:
                 if maze.maze[n][m] & Directions.W:
                     cell.West = True
                     closed += 1
-                if closed !=4  and not cell.supgum and not cell.player_init_position:
+                if closed !=4  and not cell.supgum and (n, m) != player_position:
                     cell.gum = True
                     score += data.get_pacgum_points()
                 cells.append(cell)

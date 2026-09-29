@@ -12,6 +12,7 @@ class MazeRender:
         self.wall_color = (0, 0, 205)  
         self.padding = 10
         self.dot_color = (255, 184, 174)  # classic pale pink/white pac-dot color
+        self.pacman = pygame.image.load("assets/pacman.jpg").convert()
     def draw_corner(self, point, scale):
         pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
         pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
@@ -59,15 +60,15 @@ class MazeRender:
             for col in range(self.cols):
                 cell = self.maze[row][col]
 
-                # skip cells that should not have dote
-                if not getattr(cell, "supgum", True) and not getattr(cell, "gum", True):
-                    continue
-
                 center_x = int((col + 0.5) * cell_width) + 1
                 center_y = int((row + 0.5) * cell_height) + 1
 
                 if getattr(cell, "supgum", True):
                     dot_radius = max(2, int(min(cell_width, cell_height) * 0.12))
-                else:
+                elif getattr(cell, "gum", True):
                     dot_radius = max(2, int(min(cell_width, cell_height) * 0.05))
+
+                if cell.has_player:
+                    self.pacman = pygame.transform.scale(self.pacman, (30, 30))
+                    self.screen.blit(self.pacman, (center_x, center_y))
                 pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)

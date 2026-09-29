@@ -39,23 +39,30 @@ class GameLoop:
 
         run = True
         clock = pygame.time.Clock()
+        player_pos = (data.get_height(level) // 2, data.get_width(level) // 2)
+        maze, req_score = Maze.creat_cells(level, data, player_pos)
+        player = Player(positiony=player_pos[0], positionx=player_pos[1], required_score=req_score, position=player_pos)
+        moving = MovePlayer()
+        check_move = None
         while run:
             pygame.time.delay(10)
             for event in pygame.event.get():
-                move = self.handle_event(event)
-                if move == "OUT":
-                    return
-                # initialisation ========================================================================
-                player_pos = (data.get_height(level) // 2, data.get_width(level) // 2)
-                maze, req_score = Maze.creat_cells(level, data, player_pos)
-                print(maze, "\n\n\n")
-                player = Player(positiony=player_pos[0], positionx=player_pos[1], required_score=req_score, position=player_pos)
-                moving = MovePlayer()
-                # moving========================================================================
-                moving.move_player(move, player, data, maze)
-                # if player.super_power:
-
+                for event in pygame.event.get():
+                    move = self.handle_event(event)
+                    
+                    if move == "OUT":
+                        return  # Exit the level/game
+                        
+                    # Only update check_move if a valid move command was pressed
+                    if move is not None and check_move != move:
+                        check_move = move
+                
+                if check_move is not None:
+                    moving.move_player(check_move, player, data, maze)
+                    
+                # Check if the player won/lost/ate a pill
                 state = moving.check_level(player)
+                
                 if state == "END":
                     break
                     # GAME SHOULD END WITH WIN
@@ -80,6 +87,16 @@ class GameLoop:
             # Draw the background image instead of clearing with solid black
             # self.screen.fill((255, 255, 255))
             self.screen.fill((0, 0, 0))
+            # i = 0
+            # for row in range(data.get_height(0)):
+            #     for col in range(data.get_width(0)):
+            #         cell = maze[row][col]
+            #         if cell.has_player:
+            #             i += 1       
+            #             print(cell)
+                        # exit()
+            # print(i)
+            # exit()
             maze_draw = MazeRender(maze, self.screen)
             maze_draw.draw()
             # self.entry_page.draw()
