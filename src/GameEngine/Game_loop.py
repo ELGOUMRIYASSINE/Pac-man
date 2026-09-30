@@ -47,22 +47,23 @@ class GameLoop:
         while run:
             pygame.time.delay(10)
             for event in pygame.event.get():
-                for event in pygame.event.get():
-                    move = self.handle_event(event)
+                move = self.handle_event(event)
+                
+                if move == "OUT":
+                    exit()
+                    run = False
+                    break # Exit the level/game
                     
-                    if move == "OUT":
-                        return  # Exit the level/game
-                        
-                    # Only update check_move if a valid move command was pressed
-                    if move is not None and check_move != move:
-                        check_move = move
+                # Only update check_move if a valid move command was pressed
+                if move is not None and check_move != move:
+                    check_move = move
                 
                 if check_move is not None:
                     moving.move_player(check_move, player, data, maze)
                     
                 # Check if the player won/lost/ate a pill
                 state = moving.check_level(player)
-                
+                print(player.position)
                 if state == "END":
                     break
                     # GAME SHOULD END WITH WIN
