@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import curses
 from ..Maze.Maze import Maze, Cell, MetaData
 from typing import List, Tuple
 
