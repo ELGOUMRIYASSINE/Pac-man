@@ -99,7 +99,7 @@ class MovePlayer:
         else:
             if player.lives > 0:
                 return "RESPOWN"
-            else:
-                return "LOSE"
+            #else:
+            #   return "LOSE"
         return None
             

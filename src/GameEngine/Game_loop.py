@@ -94,7 +94,9 @@ class GameLoop:
             self.last_move = now
 
         result = self.moving.check_level(self.player)
-        if result == "END":                    # win
+        if result == "END":      
+            #print("END")
+            #exit()# win
             self.screen_state = "MENU"
         elif result == "NEXT":
             self.level = self.player.level
@@ -105,6 +107,8 @@ class GameLoop:
             self.player.positiony, self.player.positionx = self.player_pos
             self.direction = None
         elif result == "LOSE":
+            #print("lose")
+            #exit()
             self.player.dead = True
             self.screen_state = "MENU"
 

@@ -4,7 +4,6 @@ import sys
 # start game
 # View Highscores
 # Instructions 
-# Exit
 
 class MainMenu:
     WHITE = (255,255,255)
