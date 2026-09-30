@@ -10,13 +10,13 @@ This class validate the json file data using pydantic
 
 class Level(BaseModel):
     width: int = Field(gt=0, default=10)
-    height: int = Field(gt=0, default=30)
+    height: int = Field(gt=0, default=10)
 
 
 class ValidJson(BaseModel):
 
     levels: List[Level] = Field(
-        default_factory=lambda: [Level(width=25, height=20) for _ in range(10)]
+        default_factory=lambda: [Level(width=10, height=10) for _ in range(10)]
     )
     player_lives: int = Field(gt=0, default=3, le=10)
     pacgum_points: int = Field(gt=0, default=13)
@@ -92,7 +92,7 @@ class ParseConfig:
 
                 width = level.get("width", None)
                 if not width:
-                    width = 25
+                    width = 10
                     print(
                         f"Warning: levels[{i}].width is missing, using default..."
                     )
@@ -101,11 +101,11 @@ class ParseConfig:
                     print(
                         f"Warning: levels[{i}].width value invalid, using default..."
                     )
-                    width = 25
+                    width = 10
 
                 height = level.get("height", None)
                 if not height:
-                    height = 20
+                    height = 10
                     print(
                         f"Warning: levels[{i}].height is missing, using default..."
                     )
@@ -114,9 +114,9 @@ class ParseConfig:
                     print(
                         f"Warning: levels[{i}].height value invalid, using default..."
                     )
-                    height = 20
+                    height = 10
 
-                data["levels"][i] = {"width": 15, "height": 15}
+                data["levels"][i] = {"width": width, "height": height}
         validated = ValidJson.model_validate(data)
         # model_dump make the output of model validate (basemodel object) a dictionnary
         return validated.model_dump()

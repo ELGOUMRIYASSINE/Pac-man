@@ -2,7 +2,10 @@ from .player import Player, MovePlayer, Maze
 import pygame
 from ..rendering.entry_page.entry import EntryFace
 from ..rendering.maze_render import MazeRender
-from pathlib import Path
+from .gosts import Ghost
+
+import sys
+
 
 class GameLoop:
 
@@ -13,7 +16,9 @@ class GameLoop:
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
-            return "OUT"
+            pygame.quit()
+            sys.exit()
+            # return "OUT"
         elif event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_UP, pygame.K_w):
                 return "UP"
@@ -39,20 +44,31 @@ class GameLoop:
 
         run = True
         clock = pygame.time.Clock()
-        player_pos = (data.get_height(level) // 2, data.get_width(level) // 2)
-        maze, req_score = Maze.creat_cells(level, data, player_pos)
-        player = Player(positiony=player_pos[0], positionx=player_pos[1], required_score=req_score, position=player_pos)
+        player_pos = (
+            data.get_height(level) // 2 - (data.get_height(level) % 2 == 0),
+            data.get_width(level) // 2 - (data.get_width(level) % 2 == 0),
+        )
+
+        ghosts = [Ghost(id=x) for x in range(3)]
+        print("ok")
+        maze, req_score = Maze.creat_cells(level, data, player_pos,ghosts)
+        player = Player(
+            positiony=player_pos[0],
+            positionx=player_pos[1],
+            required_score=req_score,
+            position=player_pos
+        )
         moving = MovePlayer()
         check_move = None
+        print(ghosts[0].move_ghost(player,maze,data))
         while run:
             pygame.time.delay(10)
             for event in pygame.event.get():
                 move = self.handle_event(event)
-                
+
                 if move == "OUT":
-                    # run = False
-                    break # Exit the level/game
-                    
+                    break  # Exit the level/game
+
                 # Only update check_move if a valid move command was pressed
                 if move is not None:
                     check_move = move
@@ -60,22 +76,37 @@ class GameLoop:
                 break
             if check_move is not None:
                 moving.move_player(check_move, player, data, maze)
-                
+
             # Check if the player won/lost/ate a pill
-            state = moving.check_level(player)
+            state = moving.check_level(player, data)
             if state == "END":
                 break
                 # GAME SHOULD END WITH WIN
             elif state == "NEXT":
+                # should show the page of next level and stop the current level
                 level = player.level
-                maze, req_score = Maze.creat_cells(level, data, player_pos)
+                player_pos = (
+                            data.get_height(level) // 2 - (data.get_height(level) % 2 == 0),
+                            data.get_width(level) // 2 - (data.get_width(level) % 2 == 0),
+                        )
+                player.positiony=player_pos[0]
+                player.positionx=player_pos[1]
+                player.position = player_pos
+                maze, req_score = Maze.creat_cells(level, data, player_pos, ghosts)
+                player.required_score = req_score + player.score
             elif state == "RESPOWN":
+                #should make the player appear in the center 
                 player.lives -= 1
+                player.dead = False
                 player.position = player_pos
                 player.positiony = player_pos[0]
                 player.positionx = player_pos[1]
+                check_move = None
             elif state == "LOSE":
                 player.dead = True
+                break
+            elif state == "CON":
+                pass
                 # GAME SHOULD END WITH LOSE
                 # run = False
 
@@ -93,9 +124,9 @@ class GameLoop:
             #     for col in range(data.get_width(0)):
             #         cell = maze[row][col]
             #         if cell.has_player:
-            #             i += 1       
+            #             i += 1
             #             print(cell)
-                        # exit()
+            # exit()
             # print(i)
             # exit()
             maze_draw = MazeRender(maze, self.screen)
@@ -103,6 +134,6 @@ class GameLoop:
             # self.entry_page.draw()
             pygame.display.flip()
             # pygame.display.update()
-            clock.tick(5)
+            clock.tick(3)
 
         pygame.quit()

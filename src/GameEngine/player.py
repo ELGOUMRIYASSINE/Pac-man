@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ..Maze.Maze import Maze, Cell, MetaData
+from ..Maze.Maze import Cell, MetaData
 from typing import List, Tuple
 
 
@@ -34,6 +34,8 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
+                if maze[player.positiony][player.positionx].has_ghost:
+                    player.dead = True
             else:
                 player.can_move = False
         # -----------------------------------------------------------------------------
@@ -51,6 +53,8 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
+                if maze[player.positiony][player.positionx].has_ghost:
+                    player.dead = True
             else:
                 player.can_move = False
         # ------------------------------------------------------------------------------------
@@ -70,6 +74,8 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
+                if maze[player.positiony][player.positionx].has_ghost:
+                    player.dead = True
             else:
                 player.can_move = False
         # --------------------------------------------------------------------------------
@@ -86,19 +92,22 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
+                if maze[player.positiony][player.positionx].has_ghost:
+                    player.dead = True
             else:
                 player.can_move = False
 
-    def check_level(self, player:Player)-> str:
-        if player.score == player.required_score and player.lives > 0:
-            if player.level < 10:
-                player.level += 1
-                return "NEXT"
-            else:
-                return "END"
-        else:
-            if player.lives > 0:
-                return "RESPOWN"
-            else:
-                return "LOSE"
-            
+    def check_level(self, player:Player, data:MetaData)-> str:
+        if (
+            player.score == player.required_score
+            and player.level < 10
+        ):
+            player.level += 1
+            player.lives = data.get_lives()
+            return "NEXT"
+        elif player.dead and player.lives > 0:
+            return "RESPOWN"
+        elif player.score != player.required_score and player.lives == 0:
+            return "LOSE"
+        elif not player.dead and player.required_score != player.score:
+            return "CON"

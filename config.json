@@ -1,62 +1,61 @@
 # config file
                                      
     // hiscore_file: the name of the file the hiscore data will stored in
-    // levels: array of each level data
-    //         each level become harder when the maze become bigger
-    // width: maze width in each level
-    // height: maze height in each level
-    // player_lives: how many time a player can retry in one level (before the time ends)
-    // pacgum_points: the value of each pacgum
-    // supergum_points: the value of each super_pacgum
-    // gost_points: the value of each ghost eaten
-    // level_max_time: the maximum time of each level, if it ends before the player wins, the player loses
-
+// levels: array of each level data
+//         each level become harder when the maze become bigger
+// width: maze width in each level
+// height: maze height in each level
+// player_lives: how many time a player can retry in one level (before the time ends)
+// pacgum_points: the value of each pacgum
+// supergum_points: the value of each super_pacgum
+// gost_points: the value of each ghost eaten
+// level_max_time: the maximum time of each level, if it ends before the player wins, the player loses
 {
     // "highscore_file": "q",
     "levels": [
         {
-            "height": 7,
-            "width":7
+            "height": 5,
+            "width": 5
         },
         {
-            "width":7,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
+            "width": 7,
             "height": 7
         },
         {
-            "width":7,
-            "height": 7
-        },
-        {
-            "width":7,
+            "width": 7,
             "height": 7
         }
     ],
-    "player_lives":,
-    "pacgum_points":-13,
-    "supergum_points":37,
-    "gost_points":65
+    "player_lives": 5,
+    "pacgum_points": -13,
+    "supergum_points": 37,
+    "gost_points": 65
 }

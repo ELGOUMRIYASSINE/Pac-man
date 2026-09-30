@@ -1,9 +1,10 @@
 from enum import IntEnum
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, List
 from mazegenerator import MazeGenerator
 from .get_maze_bylevel import LevelMaze
 from ..metadata import MetaData
+from ..GameEngine.gosts import  Ghost, Cell
 
 
 class Directions(IntEnum):
@@ -12,24 +13,13 @@ class Directions(IntEnum):
     S=4
     W=8
 
-@dataclass
-class Cell:
-    position:Tuple[int, int]
-    North:bool = False
-    Est: bool = False
-    South: bool = False
-    West: bool = False
-    supgum:bool = False
-    gum:bool = False
-    ghost:bool = False
-    has_player:bool = False
-    palyer_init_pos:bool=False
+
 
 @dataclass
 class Maze:
 
     @classmethod
-    def creat_cells(cls, level: int, data:MetaData, player_position: Tuple[int, int]):
+    def creat_cells(cls, level: int, data:MetaData, player_position: Tuple[int, int], ghosts:List[Ghost]):
 
         maze: MazeGenerator = LevelMaze.get_maze_bylevel(level, data)
         height:int = maze._height
@@ -39,32 +29,45 @@ class Maze:
 
         for n in range(height):
             cells = []
+            a = 0
             for m in range(width):
                 closed = 0
                 cell = Cell((n, m))
-                if (n, m) == player_position:
+                if (n , m) == player_position:
                     cell.has_player = True
                     cell.palyer_init_pos = True
                     
                 else:
                     if m == 0 and n == 0:
                         cell.supgum = True
-                        cell.ghost = True
+                        cell.has_ghost = True
+                        ghosts[a].id = a
+                        ghosts[a].position = (n, m)
+                        a += 1
                         score += data.get_supgum_points()
 
                     elif m == width - 1 and n == 0:
                         cell.supgum = True
-                        cell.ghost = True
+                        cell.has_ghost = True
                         score += data.get_supgum_points()
+                        ghosts[a].id = a
+                        ghosts[a].position = (n, m)
+                        a += 1
 
                     elif m == 0 and n == height -1:
                         cell.supgum = True
-                        cell.ghost = True
+                        cell.has_ghost = True
+                        ghosts[a].id = a
+                        ghosts[a].position = (n, m)
+                        a += 1
                         score += data.get_supgum_points()
 
                     elif m == width -1 and n == height - 1:
                         cell.supgum = True
-                        cell.ghost = True
+                        cell.has_ghost = True
+                        ghosts[a].id = a
+                        ghosts[a].position = (n, m)
+                        a += 1
                         score += data.get_supgum_points()
 
                 if maze.maze[n][m] & Directions.N:
