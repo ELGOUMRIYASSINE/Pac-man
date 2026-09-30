@@ -101,4 +101,5 @@ class MovePlayer:
                 return "RESPOWN"
             else:
                 return "LOSE"
+        return None
             
