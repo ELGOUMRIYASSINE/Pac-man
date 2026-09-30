@@ -50,34 +50,34 @@ class GameLoop:
                 move = self.handle_event(event)
                 
                 if move == "OUT":
-                    exit()
-                    run = False
+                    # run = False
                     break # Exit the level/game
                     
                 # Only update check_move if a valid move command was pressed
-                if move is not None and check_move != move:
+                if move is not None:
                     check_move = move
+            if not run:
+                break
+            if check_move is not None:
+                moving.move_player(check_move, player, data, maze)
                 
-                if check_move is not None:
-                    moving.move_player(check_move, player, data, maze)
-                    
-                # Check if the player won/lost/ate a pill
-                state = moving.check_level(player)
-                print(player.position)
-                if state == "END":
-                    break
-                    # GAME SHOULD END WITH WIN
-                elif state == "NEXT":
-                    level = player.level
-                elif state == "RESPOWN":
-                    player.lives -= 1
-                    player.position = player_pos
-                    player.positiony = player_pos[0]
-                    player.positionx = player_pos[1]
-                elif state == "LOSE":
-                    player.dead = True
-                    # GAME SHOULD END WITH LOSE
-                    break
+            # Check if the player won/lost/ate a pill
+            state = moving.check_level(player)
+            if state == "END":
+                break
+                # GAME SHOULD END WITH WIN
+            elif state == "NEXT":
+                level = player.level
+                maze, req_score = Maze.creat_cells(level, data, player_pos)
+            elif state == "RESPOWN":
+                player.lives -= 1
+                player.position = player_pos
+                player.positiony = player_pos[0]
+                player.positionx = player_pos[1]
+            elif state == "LOSE":
+                player.dead = True
+                # GAME SHOULD END WITH LOSE
+                # run = False
 
             # get all moves
 
@@ -103,6 +103,6 @@ class GameLoop:
             # self.entry_page.draw()
             pygame.display.flip()
             # pygame.display.update()
-            clock.tick(60)
+            clock.tick(5)
 
         pygame.quit()

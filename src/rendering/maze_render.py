@@ -65,10 +65,11 @@ class MazeRender:
 
                 if getattr(cell, "supgum", True):
                     dot_radius = max(2, int(min(cell_width, cell_height) * 0.12))
+                    pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)
                 elif getattr(cell, "gum", True):
                     dot_radius = max(2, int(min(cell_width, cell_height) * 0.05))
+                    pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)
 
                 if cell.has_player:
                     self.pacman = pygame.transform.scale(self.pacman, (30, 30))
                     self.screen.blit(self.pacman, (center_x, center_y))
-                pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)
