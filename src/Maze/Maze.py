@@ -4,7 +4,21 @@ from typing import Tuple, List
 from mazegenerator import MazeGenerator
 from .get_maze_bylevel import LevelMaze
 from ..metadata import MetaData
-from ..GameEngine.gosts import  Ghost, Cell
+from ..GameEngine.gosts import  Ghost
+
+
+@dataclass
+class Cell:
+    position: Tuple[int, int]
+    North: bool = False
+    Est: bool = False
+    South: bool = False
+    West: bool = False
+    supgum: bool = False
+    gum: bool = False
+    has_ghost: bool = False
+    has_player: bool = False
+    palyer_init_pos: bool = False
 
 
 class Directions(IntEnum):
@@ -12,7 +26,6 @@ class Directions(IntEnum):
     E=2
     S=4
     W=8
-
 
 
 @dataclass
@@ -27,9 +40,9 @@ class Maze:
         maze_obj = []
         score:int = 0
 
+        a = 0
         for n in range(height):
             cells = []
-            a = 0
             for m in range(width):
                 closed = 0
                 cell = Cell((n, m))
@@ -45,7 +58,7 @@ class Maze:
                         ghosts[a].position = (n, m)
                         a += 1
                         score += data.get_supgum_points()
-
+                        
                     elif m == width - 1 and n == 0:
                         cell.supgum = True
                         cell.has_ghost = True
@@ -61,7 +74,7 @@ class Maze:
                         ghosts[a].position = (n, m)
                         a += 1
                         score += data.get_supgum_points()
-
+                        
                     elif m == width -1 and n == height - 1:
                         cell.supgum = True
                         cell.has_ghost = True
@@ -69,7 +82,7 @@ class Maze:
                         ghosts[a].position = (n, m)
                         a += 1
                         score += data.get_supgum_points()
-
+                        
                 if maze.maze[n][m] & Directions.N:
                     cell.North = True
                     closed += 1
@@ -88,4 +101,4 @@ class Maze:
                 cells.append(cell)
 
             maze_obj.append(cells)
-        return maze_obj, score
+        return maze_obj, score, ghosts

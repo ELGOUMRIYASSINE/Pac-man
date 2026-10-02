@@ -6,7 +6,7 @@ from typing import List, Tuple
 @dataclass
 class Player:
     can_move:bool = False
-    lives:int = 3
+    lives:int = 6
     positionx:int = 0
     positiony: int= 0
     position:Tuple[int,int]=(0, 0)
@@ -36,6 +36,7 @@ class MovePlayer:
                     maze[player.positiony][player.positionx].supgum = False
                 if maze[player.positiony][player.positionx].has_ghost:
                     player.dead = True
+                    maze[player.positiony][player.positionx].has_player = False
             else:
                 player.can_move = False
         # -----------------------------------------------------------------------------
@@ -55,6 +56,7 @@ class MovePlayer:
                     maze[player.positiony][player.positionx].supgum = False
                 if maze[player.positiony][player.positionx].has_ghost:
                     player.dead = True
+                    maze[player.positiony][player.positionx].has_player = False
             else:
                 player.can_move = False
         # ------------------------------------------------------------------------------------
@@ -76,6 +78,7 @@ class MovePlayer:
                     maze[player.positiony][player.positionx].supgum = False
                 if maze[player.positiony][player.positionx].has_ghost:
                     player.dead = True
+                    maze[player.positiony][player.positionx].has_player = False
             else:
                 player.can_move = False
         # --------------------------------------------------------------------------------
@@ -94,6 +97,7 @@ class MovePlayer:
                     maze[player.positiony][player.positionx].supgum = False
                 if maze[player.positiony][player.positionx].has_ghost:
                     player.dead = True
+                    maze[player.positiony][player.positionx].has_player = False
             else:
                 player.can_move = False
 

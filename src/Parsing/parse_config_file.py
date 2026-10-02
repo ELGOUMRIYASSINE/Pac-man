@@ -18,7 +18,7 @@ class ValidJson(BaseModel):
     levels: List[Level] = Field(
         default_factory=lambda: [Level(width=10, height=10) for _ in range(10)]
     )
-    player_lives: int = Field(gt=0, default=3, le=10)
+    player_lives: int = Field(gt=0, default=6, le=10)
     pacgum_points: int = Field(gt=0, default=13)
     supergum_points: int = Field(gt=0, default=37)
     gost_points: int = Field(gt=0, default=42)
