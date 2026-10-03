@@ -13,6 +13,7 @@ class MazeRender:
         self.padding = 10
         self.dot_color = (255, 184, 174)  # classic pale pink/white pac-dot color
         self.pacman = pygame.image.load("assets/pacman.jpg").convert()
+        self.ghost = pygame.image.load("assets/ghost.png").convert()
     def draw_corner(self, point, scale):
         pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
         pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
@@ -73,3 +74,6 @@ class MazeRender:
                 if cell.has_player:
                     self.pacman = pygame.transform.scale(self.pacman, (30, 30))
                     self.screen.blit(self.pacman, (center_x, center_y))
+                if cell.ghost:
+                    self.ghost = pygame.transform.scale(self.ghost, (30, 30))
+                    self.screen.blit(self.ghost, (center_x, center_y))

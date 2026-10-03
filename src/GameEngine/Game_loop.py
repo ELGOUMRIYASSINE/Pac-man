@@ -3,6 +3,8 @@ import pygame
 from .player import Player, MovePlayer, Maze
 from ..rendering.maze_render import MazeRender
 from ..rendering.main_menu import MainMenu
+from ..rendering.instructions import Instructions
+
 
 
 class GameLoop:
@@ -16,10 +18,10 @@ class GameLoop:
 
         self.menu = MainMenu(self.screen)
         self.screen_state = "MENU"          # "MENU" or "GAME"
-        self.running = True
 
+        self.running = True
         # game data (filled by start_game)
-        self.level = 0
+        # self.level       
         self.maze = None
         self.maze_render = None
         self.player = None
@@ -66,11 +68,11 @@ class GameLoop:
         for event in events:
             action = self.menu.handle_event(event, mouse)   # "PLAY" / "EXIT" / None
             if action == "PLAY":
-                print("cc")
+                # print("cc")
                 self.start_game(data)
                 return
             if action == "EXIT":
-                print("cc")
+                # print("cc")
                 self.running = False
                 return
         self.menu.draw(mouse)
