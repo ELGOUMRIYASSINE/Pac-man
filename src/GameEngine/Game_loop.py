@@ -1,10 +1,11 @@
-import sys
+from .player import Player, MovePlayer
 import pygame
-from .player import Player, MovePlayer, Maze
+from ..rendering.entry_page.entry import EntryFace
 from ..rendering.maze_render import MazeRender
-from ..rendering.main_menu import MainMenu
-from ..rendering.instructions import Instructions
+from .move_ghosts import Ghost, MoveGhost
+from ..Maze.Maze import Maze
 
+import sys
 
 
 class GameLoop:
@@ -14,132 +15,137 @@ class GameLoop:
         pygame.init()
         pygame.display.set_caption("Pacman")
         self.screen = pygame.display.set_mode((1200, 740))
-        self.clock = pygame.time.Clock()
+        self.entry_page = EntryFace(self.screen, 700, 1200)
 
-        self.menu = MainMenu(self.screen)
-        self.screen_state = "MENU"          # "MENU" or "GAME"
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_UP, pygame.K_w):
+                return "UP"
 
-        self.running = True
-        # game data (filled by start_game)
-        # self.level       
-        self.maze = None
-        self.maze_render = None
-        self.player = None
-        self.moving = MovePlayer()
-        self.direction = None
-        self.last_move = 0
+            elif event.key in (pygame.K_DOWN, pygame.K_s):
+                return "DOWN"
 
-    # ---------- setup ----------
-    def start_game(self, data):
-        self.level = 0
-        self.player = None
-        self.load_level(data)
-        self.screen_state = "GAME"
+            elif event.key in (pygame.K_LEFT, pygame.K_a):
+                return "LEFT"
 
-    def load_level(self, data):
-        self.player_pos = (data.get_height(self.level) // 2,
-                           data.get_width(self.level) // 2)
-        self.maze, req_score = Maze.creat_cells(self.level, data, self.player_pos)
-        self.maze_render = MazeRender(self.maze, self.screen)
+            elif event.key in (pygame.K_RIGHT, pygame.K_d):
+                return "RIGHT"
 
-        if self.player is None:   # new game
-            self.player = Player(positiony=self.player_pos[0],
-                                 positionx=self.player_pos[1],
-                                 required_score=req_score,
-                                 position=self.player_pos)
-        else:                     # next level: keep score/lives, reset position
-            self.player.position = self.player_pos
-            self.player.positiony, self.player.positionx = self.player_pos
-        self.direction = None
-
-    # ---------- input ----------
-    def key_to_move(self, event):
-        if event.type != pygame.KEYDOWN:
-            return None
-        return {
-            pygame.K_UP: "UP", pygame.K_w: "UP",
-            pygame.K_DOWN: "DOWN", pygame.K_s: "DOWN",
-            pygame.K_LEFT: "LEFT", pygame.K_a: "LEFT",
-            pygame.K_RIGHT: "RIGHT", pygame.K_d: "RIGHT",
-        }.get(event.key)
-
-    # ---------- one method per screen ----------
-    def menu_frame(self, events, data, mouse):
-        for event in events:
-            action = self.menu.handle_event(event, mouse)   # "PLAY" / "EXIT" / None
-            if action == "PLAY":
-                # print("cc")
-                self.start_game(data)
-                return
-            if action == "EXIT":
-                # print("cc")
-                self.running = False
-                return
-        self.menu.draw(mouse)
-
-    def game_frame(self, events, data):
-        for event in events:
-            if event.type == pygame.QUIT:
-                self.running = False
-                return
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.screen_state = "MENU"
-                return
-            move = self.key_to_move(event)
-            if move:
-                self.direction = move
-
-        # update (throttled so speed doesn't depend on FPS)
-        now = pygame.time.get_ticks()
-        if self.direction and now - self.last_move >= self.MOVE_DELAY:
-            self.moving.move_player(self.direction, self.player, data, self.maze)
-            self.last_move = now
-
-        result = self.moving.check_level(self.player)
-        if result == "END":      
-            #print("END")
-            #exit()# win
-            self.screen_state = "MENU"
-        elif result == "NEXT":
-            self.level = self.player.level
-            self.load_level(data)
-        elif result == "RESPOWN":
-            self.player.lives -= 1
-            self.player.position = self.player_pos
-            self.player.positiony, self.player.positionx = self.player_pos
-            self.direction = None
-        elif result == "LOSE":
-            #print("lose")
-            #exit()
-            self.player.dead = True
-            self.screen_state = "MENU"
-
-        # draw
-        self.screen.fill((0, 0, 0))
-        self.maze_render.draw()
-
-    # ---------- main loop ----------
     def entry(self, data):
-        while self.running:
-            mouse = pygame.mouse.get_pos()
-            events = pygame.event.get()          
-            for event in events:
-                if event.type == pygame.QUIT:
-                    self.running = False
-            if not self.running:
+
+        run = True
+        level = 0
+        player = Player()
+        pygame.display.set_caption("Pacman")
+        # Load and scale the background image ONCE before the loop starts
+        bg_image = pygame.image.load("assets/entry_page.bmp").convert()
+        # bg_image = pygame.transform.scale(bg_image, (1200, 700))
+
+        run = True
+        clock = pygame.time.Clock()
+        player_pos = (
+            data.get_height(level) // 2 - (data.get_height(level) % 2 == 0),
+            data.get_width(level) // 2 - (data.get_width(level) % 2 == 0),
+        )
+
+        ghosts = [Ghost(id=x) for x in range(4)]
+        maze, req_score, ghosts = Maze.creat_cells(level, data, player_pos,ghosts)
+        player = Player(
+            positiony=player_pos[0],
+            positionx=player_pos[1],
+            required_score=req_score,
+            position=player_pos
+        )
+        moving = MovePlayer()
+        check_move = None
+        while run:
+            pygame.time.delay(10)
+            for event in pygame.event.get():
+                move = self.handle_event(event)
+
+                if move == "OUT":
+                    break
+            if move is not None:
+                check_move = move
+            if not run:
                 break
+            if check_move is not None:
+                moving.move_player(check_move, player, data, maze)
+            state = moving.check_level(player, data)
+            if state == "END":
+                break
+                # GAME SHOULD END WITH WIN
+            elif state == "NEXT":
+                # should show the page of next level and stop the current level
+                level = player.level
+                player_pos = (
+                            data.get_height(level) // 2 - (data.get_height(level) % 2 == 0),
+                            data.get_width(level) // 2 - (data.get_width(level) % 2 == 0),
+                        )
+                player.positiony=player_pos[0]
+                player.positionx=player_pos[1]
+                player.position = player_pos
+                maze, req_score, ghosts = Maze.creat_cells(level, data, player_pos, ghosts)
+                player.required_score = req_score + player.score
+            elif state == "RESPOWN":
+                # should make the player appear in the center
+                player.lives -= 1
+                player.dead = False
+                player.position = player_pos
+                player.positiony = player_pos[0]
+                player.positionx = player_pos[1]
+                check_move = None
+                _, _, ghosts = Maze.creat_cells(level, data, player_pos, ghosts)
+            elif state == "LOSE":
+                player.dead = True
+                break
+            elif state == "CON":
+                pass
+            MoveGhost().move_ghost_dfs(
+                ghosts[0].position,
+                maze,
+                (data.get_height(level), data.get_width(level)), ghosts[0],
+                player.position, None
+            )
+            if ghosts[0].neighboars and len(ghosts[0].neighboars)>0:
+                maze[ghosts[0].position[0]][ghosts[0].position[1]].has_ghost = False
+                ghosts[0].position = ghosts[0].neighboars[1]
+                maze[ghosts[0].position[0]][ghosts[0].position[1]].has_ghost = True
+            # if ghosts[1].neighboars and len(ghosts[1].neighboars)>0:
+            #     maze[ghosts[1].position[0]][ghosts[1].position[1]].has_ghost = False
+            #     ghosts[1].position = ghosts[1].neighboars[1]
+            #     maze[ghosts[1].position[0]][ghosts[1].position[1]].has_ghost = True
+            # if ghosts[2].neighboars and len(ghosts[2].neighboars)>0:
+            #     maze[ghosts[2].position[0]][ghosts[2].position[1]].has_ghost = False
+            #     ghosts[2].position = ghosts[2].neighboars[1]
+            #     maze[ghosts[2].position[0]][ghosts[2].position[1]].has_ghost = True
+            # if ghosts[3].neighboars and len(ghosts[3].neighboars)>0:
+            #     maze[ghosts[3].position[0]][ghosts[3].position[1]].has_ghost = False
+            #     ghosts[3].position = ghosts[3].neighboars[1]
+            #     maze[ghosts[3].position[0]][ghosts[3].position[1]].has_ghost = True
 
-            if self.screen_state == "MENU":
-                # exit()
-                print("menu")
-                self.menu_frame(events, data, mouse)
-            elif self.screen_state == "GAME":
-                print("game")
-                # exit()
-                self.game_frame(events, data)
+            # Check if the player won/lost/ate a pill
+                # GAME SHOULD END WITH LOSE
+                # run = False
 
-            pygame.display.flip()                
-            self.clock.tick(60)
+            # get all moves
+
+            # game logic
+
+            # drawing all
+
+            # Draw the background image instead of clearing with solid black
+            # self.screen.fill((255, 255, 255))
+            self.screen.fill((0, 0, 0))
+            maze_draw = MazeRender(maze, self.screen)
+            maze_draw.draw()
+            # self.entry_page.draw()
+            pygame.display.flip()
+            # pygame.display.update()
+            clock.tick(3)
 
         pygame.quit()
         sys.exit()
