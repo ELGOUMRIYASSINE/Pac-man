@@ -74,6 +74,6 @@ class MazeRender:
                 if cell.has_player:
                     self.pacman = pygame.transform.scale(self.pacman, (30, 30))
                     self.screen.blit(self.pacman, (center_x, center_y))
-                if cell.ghost:
+                if cell.has_ghost:
                     self.ghost = pygame.transform.scale(self.ghost, (30, 30))
                     self.screen.blit(self.ghost, (center_x, center_y))
