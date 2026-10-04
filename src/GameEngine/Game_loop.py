@@ -25,6 +25,7 @@ class GameLoop:
         self.moving = MovePlayer()
         self.direction = None
         self.last_move = 0
+        self.move = None
 
     def key_to_move(self, event):
         if event.type != pygame.KEYDOWN:
@@ -77,9 +78,9 @@ class GameLoop:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.screen_state = "MENU"
                 return
-            move = self.key_to_move(event)
-            if move:
-                self.direction = move
+            self.move = self.key_to_move(event)
+            if self.move:
+                self.direction = self.move
 
         # update (throttled so speed doesn't depend on FPS)
         now = pygame.time.get_ticks()
@@ -131,7 +132,8 @@ class GameLoop:
         #     maze[ghosts[3].position[0]][ghosts[3].position[1]].has_ghost = True
             # draw
         self.screen.fill((0, 0, 0))
-        self.maze_render.draw()
+        # if not move:
+        self.maze_render.draw(self.move)
     def entry(self, data):
         while self.running:
             mouse = pygame.mouse.get_pos()

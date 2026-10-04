@@ -12,12 +12,19 @@ class MazeRender:
         self.wall_color = (0, 0, 205)  
         self.padding = 10
         self.dot_color = (255, 184, 174)  # classic pale pink/white pac-dot color
-        self.pacman = pygame.image.load("assets/pacman.jpg").convert()
+        # self.pacman = pygame.image.load("assets/pacman.jpg").convert()
+        self.player_images = ["1.png","2.png"]
+        self.upload_player = [pygame.transform.scale(pygame.image.load(f"assets/{img}").convert_alpha(), (30, 30)) for img in self.player_images]
+        self.anim_delay = 150
+        self.state_counter = 0
+        self.player_image = self.upload_player[self.state_counter]
+        self.last_anim_time = pygame.time.get_ticks()
+        self.last_move = None
         self.ghost = pygame.image.load("assets/ghost.png").convert()
     def draw_corner(self, point, scale):
         pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
         pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
-    def draw(self):
+    def draw(self, move=None):
         padding = self.wall_thinckness
         available_width = self.screen_width - padding
         available_height = self.screen_height - padding
@@ -41,7 +48,7 @@ class MazeRender:
                     self._draw_rounded_line(self.wall_color, (x, bottom), (right, bottom), self.wall_thinckness)
                 if cell.West:
                     self._draw_rounded_line(self.wall_color, (x, y), (x, bottom), self.wall_thinckness)
-        self.draw_pacgum()
+        self.draw_content(move)
 
     def _draw_rounded_line(self, color, start, end, thickness):
         pygame.draw.line(self.screen, color, start, end, thickness)
@@ -49,7 +56,26 @@ class MazeRender:
         self.draw_corner(start, radius)
         self.draw_corner(end, radius)
 
-    def draw_pacgum(self):
+    def move_player(self, move, last_move):
+        if not move:
+            move = self.last_move
+            if move == "UP":
+                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 270)
+            if move == "DOWN":
+                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 90) # good
+            if move == "LEFT":
+                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 360)
+            if move == "RIGHT":
+                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 180)
+        return move
+
+    def draw_content(self, move):
+        now = pygame.time.get_ticks()
+
+        if now - self.last_anim_time >= self.anim_delay:
+            self.state_counter = (self.state_counter + 1) % len(self.player_images)
+            self.last_anim_time = now
+    
         padding = 10
         available_width = self.screen_width - padding
         available_height = self.screen_height - padding
@@ -70,10 +96,10 @@ class MazeRender:
                 elif getattr(cell, "gum", True):
                     dot_radius = max(2, int(min(cell_width, cell_height) * 0.05))
                     pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)
-
+                
+                self.last_move = self.move_player(move, self.last_move)
                 if cell.has_player:
-                    self.pacman = pygame.transform.scale(self.pacman, (30, 30))
-                    self.screen.blit(self.pacman, (center_x, center_y))
+                    self.screen.blit(self.player_image, (center_x - 10, center_y))
                 if cell.has_ghost:
                     self.ghost = pygame.transform.scale(self.ghost, (30, 30))
                     self.screen.blit(self.ghost, (center_x, center_y))
