@@ -17,8 +17,8 @@ class Cell:
     supgum: bool = False
     gum: bool = False
     has_ghost: bool = False
-    edible_ghost:bool = False
     has_player: bool = False
+    edible_ghost:bool = False
     palyer_init_pos: bool = False
 
 
@@ -41,43 +41,6 @@ class Maze:
         maze_obj = []
         score:int = 0
 
-        ghost_spawns = {
-            (0, 0),
-            (0, width - 1),
-            (height - 1, 0),
-            (height - 1, width - 1),
-        }
-        has_42 = height >= 10 and width >= 14
-        pattern_top = (height - 5) // 2
-        pattern_left = (width - 7) // 2
-        player_row, player_col = player_position
-        inside_42 = (
-            has_42
-            and pattern_top <= player_row < pattern_top + 5
-            and pattern_left <= player_col < pattern_left + 7
-        )
-        if maze.maze[player_row][player_col] == 15 or inside_42:
-            candidates = [
-                (
-                    abs(row - player_row) + abs(col - player_col),
-                    row,
-                    col,
-                )
-                for row in range(height)
-                for col in range(width)
-                if maze.maze[row][col] != 15
-                and (row, col) not in ghost_spawns
-                and not (
-                    has_42
-                    and pattern_top <= row < pattern_top + 5
-                    and pattern_left <= col < pattern_left + 7
-                )
-            ]
-            if not candidates:
-                raise ValueError("Maze has no valid player spawn cell")
-            _, player_row, player_col = min(candidates)
-            player_position = (player_row, player_col)
-
         a = 0
         for n in range(height):
             cells = []
@@ -94,9 +57,6 @@ class Maze:
                         cell.has_ghost = True
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        ghosts[a].eaten = False
-                        ghosts[a].weak = False
                         a += 1
                         score += data.get_supgum_points()
                         
@@ -106,9 +66,6 @@ class Maze:
                         score += data.get_supgum_points()
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        ghosts[a].eaten = False
-                        ghosts[a].weak = False
                         a += 1
 
                     elif m == 0 and n == height -1:
@@ -116,9 +73,6 @@ class Maze:
                         cell.has_ghost = True
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        ghosts[a].eaten = False
-                        ghosts[a].weak = False
                         a += 1
                         score += data.get_supgum_points()
                         
@@ -127,9 +81,6 @@ class Maze:
                         cell.has_ghost = True
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        ghosts[a].eaten = False
-                        ghosts[a].weak = False
                         a += 1
                         score += data.get_supgum_points()
                         

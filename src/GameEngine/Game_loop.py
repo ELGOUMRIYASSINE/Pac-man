@@ -98,9 +98,9 @@ class GameLoop:
             if ghost.eaten or ghost.position != self.player.position:
                 continue
             if self.player.super_power and ghost.weak:
-                self.player.edible_score += 100
+                self.player.edible_score += 200
                 ghost.eaten = True
-                ghost.respawn_at = pygame.time.get_ticks() + 3000
+                ghost.respawn_at = pygame.time.get_ticks() + 4000
             else:
                 self.player.dead = True
                 player_row, player_col = self.player.position
@@ -125,29 +125,6 @@ class GameLoop:
                 continue
             ghost_row, ghost_col = ghost.position
             self.maze[ghost_row][ghost_col].has_ghost = True
-
-    def get_flee_target(self, ghost, player_position, maze_size):
-        movement = MoveGhost()
-        distances = {player_position: 0}
-        queue = deque([player_position])
-        while queue:
-            position = queue.popleft()
-            for neighbor in movement._get_neighboars(
-                position, self.maze, maze_size
-            ):
-                if neighbor not in distances:
-                    distances[neighbor] = distances[position] + 1
-                    queue.append(neighbor)
-
-        options = movement._get_neighboars(
-            ghost.position, self.maze, maze_size
-        )
-        return max(
-            options,
-            key=lambda position: distances.get(position, -1),
-            default=ghost.position,
-        )
-
     def reset_ghost_movement(self):
         now = pygame.time.get_ticks()
         self.last_ghost_moves = [now for _ in self.ghosts]
@@ -173,8 +150,14 @@ class GameLoop:
         now = pygame.time.get_ticks()
         if self.direction and now - self.last_move >= self.MOVE_DELAY:
             had_super_power = player.super_power
+            time = 0
             self.moving.move_player(self.direction, player, data, self.maze)
             if player.super_power and not had_super_power:
+                for ghost in self.ghosts:
+                    ghost.weak = True
+                time = pygame.time.get_ticks() + 5000
+            elif had_super_power and pygame.time.get_ticks() == time:
+                player.super_power = False
                 for ghost in self.ghosts:
                     ghost.weak = True
             self.last_move = now
@@ -199,7 +182,7 @@ class GameLoop:
             self.direction = None
             player.dead = False
             self.maze[self.player_pos[0]][self.player_pos[1]].has_player = True
-            _, _, self.ghosts, _ = Maze.creat_cells(
+            _, _, self.ghosts, _= Maze.creat_cells(
                 self.level, data, self.player_pos, self.ghosts
             )
             self.reset_ghost_movement()
@@ -223,18 +206,12 @@ class GameLoop:
             if now - self.last_ghost_moves[index] < self.GHOST_MOVE_DELAY:
                 continue
 
-            target = player.position
-            if ghost.weak:
-                target = self.get_flee_target(
-                    ghost, player.position, maze_size
-                )
-
             MoveGhost().move_ghost_bfs(
                 ghost.position,
                 self.maze,
                 maze_size,
                 ghost,
-                target,
+                player.position
             )
             if len(ghost.neighboars) > 1:
                 self.maze[ghost.position[0]][
