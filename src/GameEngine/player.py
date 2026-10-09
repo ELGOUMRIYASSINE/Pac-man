@@ -13,8 +13,9 @@ class Player:
     level:int = 0
     dead:bool=False
     score:int = 0
+    edible_score:int = 0
     required_score:int = 0
-    super_power:bool=True
+    super_power:bool=False
 
 class MovePlayer:
     def move_player(self, move, player:Player, data:MetaData, maze:List[List[Cell]])->None:
@@ -34,7 +35,13 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].has_ghost:
+                if maze[player.positiony][player.positionx].edible_ghost:
+                    player.edible_score += 100
+                    player.super_power = False
+                    maze[player.positiony][player.positionx].edible_ghost = False
+                    maze[player.positiony][player.positionx].has_player = False
+                    maze[player.positiony][player.positionx].has_ghost = False
+                elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
             else:
@@ -54,7 +61,11 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].has_ghost:
+                if maze[player.positiony][player.positionx].edible_ghost:
+                    player.edible_score += 100
+                    maze[player.positiony][player.positionx].edible_ghost = False
+                    maze[player.positiony][player.positionx].has_player = False
+                elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
             else:
@@ -76,7 +87,12 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].has_ghost:
+                if maze[player.positiony][player.positionx].edible_ghost:
+                    player.edible_score += 100
+                    maze[player.positiony][player.positionx].edible_ghost = False
+                    maze[player.positiony][player.positionx].has_player = False
+                    player.super_power = False
+                elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
             else:
@@ -95,7 +111,12 @@ class MovePlayer:
                     player.score += data.get_supgum_points()
                     player.super_power = True
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].has_ghost:
+                if maze[player.positiony][player.positionx].edible_ghost:
+                    player.edible_score += 100
+                    maze[player.positiony][player.positionx].edible_ghost = False
+                    maze[player.positiony][player.positionx].has_player = False
+                    player.super_power = False
+                elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
             else:

@@ -99,7 +99,16 @@ class MazeRender:
                 
                 self.last_move = self.move_player(move, self.last_move)
                 if cell.has_player:
-                    self.screen.blit(self.player_image, (center_x - 10, center_y))
+                    player_size = max(
+                        1, min(30, int(min(cell_width, cell_height) * 0.85))
+                    )
+                    player_image = pygame.transform.scale(
+                        self.player_image, (player_size, player_size)
+                    )
+                    self.screen.blit(
+                        player_image,
+                        (center_x - player_size // 2, center_y - player_size // 2),
+                    )
                 if cell.has_ghost:
                     self.ghost = pygame.transform.scale(self.ghost, (30, 30))
                     self.screen.blit(self.ghost, (center_x, center_y))

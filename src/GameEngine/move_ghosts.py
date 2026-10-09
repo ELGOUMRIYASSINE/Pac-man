@@ -1,16 +1,16 @@
 from ..Maze.Maze import Cell, Tuple, List, dataclass, Ghost
-from .player import Player, MetaData
 from collections import deque
+
 
 @dataclass
 class MoveGhost:
 
     def _get_neighboars(
-            self,
-            position: Tuple[int, int],
-            maze: List[List[Cell]],
-            h_w: Tuple[int, int],
-        )-> List[Tuple[int, int]]:
+        self,
+        position: Tuple[int, int],
+        maze: List[List[Cell]],
+        h_w: Tuple[int, int],
+    ) -> List[Tuple[int, int]]:
         x = position[1]
         y = position[0]
         height = h_w[0]
@@ -27,35 +27,35 @@ class MoveGhost:
         return neighboars
 
     def move_ghost_bfs(
-        self, player: Player, maze: List[List[Cell]], data: MetaData, ghost:Ghost
-    ):
-        q = deque()
-        while q:
-            pass
+        self,
+        start: Tuple[int, int],
+        maze: List[List[Cell]],
+        h_w: Tuple[int, int],
+        ghost: Ghost,
+        end: Tuple[int, int],
+    ) -> bool:
+        ghost.neighboars = []
+        parents = {start: start}
+        queue = deque([start])
 
-    def move_ghost_dfs(
-            self,
-            start: Tuple[int, int],
-            maze: List[List[Cell]],
-            h_w: Tuple[int, int],
-            ghost:Ghost,
-            end,visited=None
-        ):
-        if visited is None:
-            visited = []
-        visited.append(start)
-        if start == end:
-            ghost.neighboars = visited
-            return True
-        for pos in self._get_neighboars(start, maze, h_w):
-            if pos not in visited:
-                if self.move_ghost_dfs(
-                    pos,
-                    maze,
-                    h_w,
-                    ghost,end,
-                    visited
-                ):
-                    ghost.neighboars = visited
-                    return True
-        return False
+        while queue:
+            position = queue.popleft()
+            if position == end:
+                break
+            for neighbor in self._get_neighboars(position, maze, h_w):
+                if neighbor not in parents:
+                    parents[neighbor] = position
+                    queue.append(neighbor)
+
+        if end not in parents:
+            return False
+
+        path = []
+        position = end
+        while position != start:
+            path.append(position)
+            position = parents[position]
+        path.append(start)
+        ghost.back = list(path)
+        ghost.neighboars = list(reversed(path))
+        return True
