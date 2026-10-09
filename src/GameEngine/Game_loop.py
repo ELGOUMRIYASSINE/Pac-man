@@ -17,7 +17,7 @@ class GameLoop:
 
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption("Pacman")
+        pygame.display.set_caption("Pac man")
         self.screen = pygame.display.set_mode((1200, 740))
         self.entry_page = EntryFace(self.screen, 700, 1200)
         self.clock = pygame.time.Clock()
