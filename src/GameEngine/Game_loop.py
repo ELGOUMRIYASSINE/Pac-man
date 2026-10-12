@@ -30,6 +30,7 @@ class GameLoop:
         self.last_move = 0
         self.last_ghost_moves = [0 for _ in self.ghosts]
         self.move = None
+        self.maze = None
 
     def key_to_move(self, event):
         if event.type != pygame.KEYDOWN:
@@ -247,7 +248,9 @@ class GameLoop:
                 print("game")
                 # exit()
                 self.game_frame(events, data)
-
+            if self.maze:
+                self.screen.fill((0, 0, 0))
+                self.maze_render.draw(self.move)
             pygame.display.flip()
             self.clock.tick(60)
 
