@@ -19,7 +19,9 @@ class Cell:
     has_ghost: bool = False
     has_player: bool = False
     edible_ghost:bool = False
+    # ghost_type: str = None
     palyer_init_pos: bool = False
+    
 
 
 class Directions(IntEnum):

@@ -24,37 +24,90 @@ class MazeRender:
         self.cell_width = 0
         self.cell_height = 0
         self.player_mover = None
-    def draw_corner(self, point, scale):
-        pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
-        pygame.draw.circle(self.screen, (0, 0, 205), point, scale)
+        # --- maze design (only used by the wall drawing below) ---
+        self.wall_inner_color = (4, 4, 40)        # dark core of the hollow walls
+        self.wall_glow_color = (0, 40, 255, 60)   # soft halo around the walls
+        self._wall_layer = None
+        self._wall_key = None
+        self.ghosts = {}
+
+    def _grid_point(self, col, row):
+        """Pixel position of a grid intersection."""
+        return (int(col * self.cell_width) + self.radius,
+                int(row * self.cell_height) + self.radius)
+
+    def _wall_segments(self):
+        """Every wall once (a shared wall between two cells is not doubled)."""
+        segments = set()
+        for row in range(self.rows):
+            for col in range(self.cols):
+                cell = self.maze[row][col]
+                if cell.North:
+                    segments.add(((col, row), (col + 1, row)))
+                if cell.Est:
+                    segments.add(((col + 1, row), (col + 1, row + 1)))
+                if cell.South:
+                    segments.add(((col, row + 1), (col + 1, row + 1)))
+                if cell.West:
+                    segments.add(((col, row), (col, row + 1)))
+        return segments
+
+    def _wall_signature(self):
+        """Changes whenever the size or any wall changes -> cache rebuild."""
+        walls = tuple(
+            (c.North, c.Est, c.South, c.West)
+            for line in self.maze for c in line
+        )
+        return (self.screen.get_size(), self.cell_width, self.cell_height,
+                self.wall_thinckness, self.wall_color, walls)
+
+    def _build_wall_layer(self):
+        width, height = self.screen.get_size()
+        t = self.wall_thinckness
+        inner_t = max(1, t - 6)                     # leaves a ~3px colored outline
+
+        lines = [(self._grid_point(*a), self._grid_point(*b))
+                 for a, b in self._wall_segments()]
+        joints = {p for line in lines for p in line}
+
+        # 1) glow: fat translucent lines, blurred by scaling down then up
+        glow = pygame.Surface((width, height), pygame.SRCALPHA)
+        for start, end in lines:
+            pygame.draw.line(glow, self.wall_glow_color, start, end, t * 3)
+        for p in joints:
+            pygame.draw.circle(glow, self.wall_glow_color, p, int(t * 1.5))
+        small = pygame.transform.smoothscale(glow, (max(1, width // 4), max(1, height // 4)))
+        glow = pygame.transform.smoothscale(small, (width, height))
+
+        layer = pygame.Surface((width, height), pygame.SRCALPHA)
+        layer.blit(glow, (0, 0))
+
+        # 2) outer wall body, round caps have the same radius as the line
+        for start, end in lines:
+            pygame.draw.line(layer, self.wall_color, start, end, t)
+        for p in joints:
+            pygame.draw.circle(layer, self.wall_color, p, t // 2)
+
+        # 3) dark inner core -> hollow tube; drawn after ALL outer lines so
+        #    junctions and corners merge cleanly
+        for start, end in lines:
+            pygame.draw.line(layer, self.wall_inner_color, start, end, inner_t)
+        for p in joints:
+            pygame.draw.circle(layer, self.wall_inner_color, p, max(1, inner_t // 2))
+
+        self._wall_layer = layer
+        self._wall_key = self._wall_signature()
+
     def draw(self, move=None):
         self.cell_width, self.cell_height = self.cell_sizes()
         self.screen.fill((0, 0, 0))
 
-        for row in range(self.rows):
-            for col in range(self.cols):
-                cell = self.maze[row][col]
+        if self._wall_key != self._wall_signature():
+            self._build_wall_layer()
+        self.screen.blit(self._wall_layer, (0, 0))
 
-                x = int(col * self.cell_width) + self.radius
-                y = int(row * self.cell_height) + self.radius
-                right = int((col + 1) * self.cell_width) + self.radius
-                bottom = int((row + 1) * self.cell_height) + self.radius
-
-                if cell.North:
-                    self._draw_rounded_line(self.wall_color, (x, y), (right, y), 10)
-                if cell.Est:
-                    self._draw_rounded_line(self.wall_color, (right, y), (right, bottom), self.wall_thinckness)
-                if cell.South:
-                    self._draw_rounded_line(self.wall_color, (x, bottom), (right, bottom), self.wall_thinckness)
-                if cell.West:
-                    self._draw_rounded_line(self.wall_color, (x, y), (x, bottom), self.wall_thinckness)
         self.draw_content(move)
 
-    def _draw_rounded_line(self, color, start, end, thickness):
-        pygame.draw.line(self.screen, color, start, end, thickness)
-        radius = thickness // 2
-        self.draw_corner(start, radius)
-        self.draw_corner(end, radius)
 
     def move_player(self, move, last_move):
         if not move:
@@ -84,7 +137,7 @@ class MazeRender:
         self.upload_player = [
             pygame.transform.scale(pygame.image.load(f"assets/{img}").convert_alpha(), (player_size, player_size)) for img in self.player_images
         ]
-        self.ghost = pygame.transform.scale(pygame.image.load("assets/ghost.png").convert_alpha(), (player_size, player_size))
+        self.ghost = pygame.transform.scale(pygame.image.load("assets/ghost.webp").convert_alpha(), (player_size, player_size))
         self.p_rotations = {
             "UP": pygame.transform.rotate(self.upload_player[self.state_counter], 270),
             "DOWN": pygame.transform.rotate(self.upload_player[self.state_counter], 90),
@@ -121,6 +174,7 @@ class MazeRender:
                 if cell.has_player:
                     player_target = (center_x, center_y)
                 if cell.has_ghost:
+                    if 
                     ghost_targets.append((center_x, center_y))
         # self.last_move = self.move_player(move, self.last_move)
         # self.screen.blit(self.player_image, player_target)
@@ -134,5 +188,6 @@ class MazeRender:
             rect = self.player_image.get_rect(center=(round(pos.x), round(pos.y)))
             self.screen.blit(self.player_image, rect)
             for ghost_target in ghost_targets:
-                self.screen.blit(self.ghost, ghost_target)
+                g_rect = self.ghost.get_rect(center=(ghost_target[0], ghost_target[1]))
+                self.screen.blit(self.ghost, g_rect)
             # self.screen.blit(self.ghost, ghost_targets[0])

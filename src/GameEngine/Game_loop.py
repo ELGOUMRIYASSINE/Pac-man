@@ -55,7 +55,7 @@ class GameLoop:
     def load_level(self, data):
         self.player_pos = (
             data.get_height(self.level) // 2,
-            data.get_width(self.level) // 2,
+            data.get_width(self.level) // 2 - 1,
         )
         self.maze, req_score, self.ghosts, self.player_pos = Maze.creat_cells(
             self.level, data, self.player_pos, self.ghosts
