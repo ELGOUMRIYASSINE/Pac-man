@@ -57,6 +57,7 @@ class Maze:
                         cell.has_ghost = True
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
+                        ghosts[a].home = (n, m)
                         a += 1
                         score += data.get_supgum_points()
                         
@@ -66,13 +67,14 @@ class Maze:
                         score += data.get_supgum_points()
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
+                        ghosts[a].home = (n, m)
                         a += 1
-
                     elif m == 0 and n == height -1:
                         cell.supgum = True
                         cell.has_ghost = True
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
+                        ghosts[a].home = (n, m)
                         a += 1
                         score += data.get_supgum_points()
                         
@@ -81,6 +83,7 @@ class Maze:
                         cell.has_ghost = True
                         ghosts[a].id = a
                         ghosts[a].position = (n, m)
+                        ghosts[a].home = (n, m)
                         a += 1
                         score += data.get_supgum_points()
                         

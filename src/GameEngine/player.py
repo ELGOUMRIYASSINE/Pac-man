@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from ..Maze.Maze import Cell, MetaData
 from typing import List, Tuple
-
+import pygame
 
 @dataclass
 class Player:
@@ -16,6 +16,7 @@ class Player:
     edible_score:int = 0
     required_score:int = 0
     super_power:bool=False
+    super_until:int = 0
 
 class MovePlayer:
     def move_player(self, move, player:Player, data:MetaData, maze:List[List[Cell]])->None:
@@ -34,13 +35,13 @@ class MovePlayer:
                 elif maze[player.positiony][player.positionx].supgum:
                     player.score += data.get_supgum_points()
                     player.super_power = True
+                    player.super_until = pygame.time.get_ticks() + 7000
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].edible_ghost:
-                    player.edible_score += 100
-                    player.super_power = False
-                    maze[player.positiony][player.positionx].edible_ghost = False
-                    maze[player.positiony][player.positionx].has_player = False
-                    maze[player.positiony][player.positionx].has_ghost = False
+                # if maze[player.positiony][player.positionx].edible_ghost:
+                #     player.super_power = False
+                #     maze[player.positiony][player.positionx].edible_ghost = False
+                #     maze[player.positiony][player.positionx].has_player = False
+                #     maze[player.positiony][player.positionx].has_ghost = False
                 elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
@@ -60,11 +61,11 @@ class MovePlayer:
                 elif maze[player.positiony][player.positionx].supgum:
                     player.score += data.get_supgum_points()
                     player.super_power = True
+                    player.super_until = pygame.time.get_ticks() + 7000
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].edible_ghost:
-                    player.edible_score += 100
-                    maze[player.positiony][player.positionx].edible_ghost = False
-                    maze[player.positiony][player.positionx].has_player = False
+                # if maze[player.positiony][player.positionx].edible_ghost:
+                #     maze[player.positiony][player.positionx].edible_ghost = False
+                #     maze[player.positiony][player.positionx].has_player = False
                 elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
@@ -86,12 +87,12 @@ class MovePlayer:
                 elif maze[player.positiony][player.positionx].supgum:
                     player.score += data.get_supgum_points()
                     player.super_power = True
+                    player.super_until = pygame.time.get_ticks() + 7000
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].edible_ghost:
-                    player.edible_score += 100
-                    maze[player.positiony][player.positionx].edible_ghost = False
-                    maze[player.positiony][player.positionx].has_player = False
-                    player.super_power = False
+                # if maze[player.positiony][player.positionx].edible_ghost:
+                #     maze[player.positiony][player.positionx].edible_ghost = False
+                #     maze[player.positiony][player.positionx].has_player = False
+                #     player.super_power = False
                 elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
@@ -110,12 +111,12 @@ class MovePlayer:
                 elif maze[player.positiony][player.positionx].supgum:
                     player.score += data.get_supgum_points()
                     player.super_power = True
+                    player.super_until = pygame.time.get_ticks() + 7000
                     maze[player.positiony][player.positionx].supgum = False
-                if maze[player.positiony][player.positionx].edible_ghost:
-                    player.edible_score += 100
-                    maze[player.positiony][player.positionx].edible_ghost = False
-                    maze[player.positiony][player.positionx].has_player = False
-                    player.super_power = False
+                # if maze[player.positiony][player.positionx].edible_ghost:
+                #     maze[player.positiony][player.positionx].edible_ghost = False
+                #     maze[player.positiony][player.positionx].has_player = False
+                #     player.super_power = False
                 elif maze[player.positiony][player.positionx].has_ghost and not player.super_power:
                     player.dead = True
                     maze[player.positiony][player.positionx].has_player = False
@@ -136,3 +137,4 @@ class MovePlayer:
             return "LOSE"
         elif not player.dead and player.required_score != player.score:
             return "CON"
+        return ""
