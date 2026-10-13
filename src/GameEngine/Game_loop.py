@@ -170,6 +170,8 @@ class GameLoop:
         elif result == "NEXT":
             self.level = player.level
             self.load_level(data)
+            player.super_power = False
+            player.super_until = 0
             # player.score += player.edible_score
             # player.edible_score = 0
         elif result == "RESPOWN":
