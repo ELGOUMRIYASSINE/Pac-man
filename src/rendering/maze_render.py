@@ -174,7 +174,7 @@ class MazeRender:
                 if cell.has_player:
                     player_target = (center_x, center_y)
                 if cell.has_ghost:
-                    if 
+                    # if 
                     ghost_targets.append((center_x, center_y))
         # self.last_move = self.move_player(move, self.last_move)
         # self.screen.blit(self.player_image, player_target)
