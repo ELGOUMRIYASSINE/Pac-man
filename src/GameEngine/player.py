@@ -128,6 +128,7 @@ class MovePlayer:
             player.score == player.required_score
             and player.level < 10
         ):
+            print(player.level)
             player.level += 1
             player.lives = data.get_lives()
             return "NEXT"

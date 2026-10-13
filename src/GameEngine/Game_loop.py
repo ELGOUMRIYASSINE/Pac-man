@@ -118,11 +118,13 @@ class GameLoop:
         for row in self.maze:
             for cell in row:
                 cell.has_ghost = False
+                cell.ghost_id = None
         for ghost in self.ghosts:
             if ghost.eaten:
                 continue
             ghost_row, ghost_col = ghost.position
             self.maze[ghost_row][ghost_col].has_ghost = True
+            self.maze[ghost_row][ghost_col].ghost_id = ghost.id
 
     def reset_ghost_movement(self):
         now = pygame.time.get_ticks()
@@ -144,9 +146,23 @@ class GameLoop:
             self.move = self.key_to_move(event)
             if self.move:
                 self.direction = self.move
+        now = pygame.time.get_ticks()
+        if self.direction and now - self.last_move >= self.MOVE_DELAY:
+            self.moving.move_player(self.direction, player, data, self.maze)
+            had_super_power = player.super_power
+            if now >= player.super_until:
+                player.super_power = False
+                for ghost in self.ghosts:
+                    ghost.weak = False
+                    ghost.eaten = False
+            elif had_super_power:
+                for ghost in self.ghosts:
+                    ghost.weak = True
+            self.last_move = now
+        self.check_collision()
         result = self.moving.check_level(player, data)
+        # now = pygame.time.get_ticks()
         if result == "END":
-            # print("END")
             player.score += player.edible_score
             player.edible_score = 0
             # exit()# win
@@ -177,20 +193,6 @@ class GameLoop:
             self.screen_state = "MENU"
             # update (throttled so speed doesn't depend on FPS)
         now = pygame.time.get_ticks()
-        if self.direction and now - self.last_move >= self.MOVE_DELAY:
-            self.moving.move_player(self.direction, player, data, self.maze)
-            had_super_power = player.super_power
-            if pygame.time.get_ticks() >= player.super_until:
-                player.super_power = False
-                for ghost in self.ghosts:
-                    ghost.weak = False
-                    ghost.eaten = False
-            elif had_super_power:
-                for ghost in self.ghosts:
-                    ghost.weak = True
-            self.check_collision()
-            self.last_move = now
-        now = pygame.time.get_ticks()
         maze_size = (data.get_height(self.level), data.get_width(self.level))
         for index, ghost in enumerate(self.ghosts):
             if ghost.eaten:
@@ -217,8 +219,11 @@ class GameLoop:
                 self.maze[ghost.position[0]][
                     ghost.position[1]
                 ].has_ghost = True
+                self.maze[ghost.position[0]][
+                                                    ghost.position[1]
+                                                ].ghost_id = ghost.id
                 self.last_ghost_moves[index] = now
-            # self.check_collision()
+            self.check_collision()
         self.sync_ghost_cells()
         # draw
         self.screen.fill((0, 0, 0))

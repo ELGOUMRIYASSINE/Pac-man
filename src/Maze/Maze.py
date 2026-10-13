@@ -17,6 +17,7 @@ class Cell:
     supgum: bool = False
     gum: bool = False
     has_ghost: bool = False
+    ghost_id:int | None = None
     has_player: bool = False
     edible_ghost:bool = False
     # ghost_type: str = None
@@ -58,6 +59,7 @@ class Maze:
                         cell.supgum = True
                         cell.has_ghost = True
                         ghosts[a].id = a
+                        cell.ghost_id = a
                         ghosts[a].position = (n, m)
                         ghosts[a].home = (n, m)
                         a += 1
@@ -68,6 +70,7 @@ class Maze:
                         cell.has_ghost = True
                         score += data.get_supgum_points()
                         ghosts[a].id = a
+                        cell.ghost_id = a
                         ghosts[a].position = (n, m)
                         ghosts[a].home = (n, m)
                         a += 1
@@ -75,6 +78,7 @@ class Maze:
                         cell.supgum = True
                         cell.has_ghost = True
                         ghosts[a].id = a
+                        cell.ghost_id = a
                         ghosts[a].position = (n, m)
                         ghosts[a].home = (n, m)
                         a += 1
@@ -84,6 +88,7 @@ class Maze:
                         cell.supgum = True
                         cell.has_ghost = True
                         ghosts[a].id = a
+                        cell.ghost_id = a
                         ghosts[a].position = (n, m)
                         ghosts[a].home = (n, m)
                         a += 1
