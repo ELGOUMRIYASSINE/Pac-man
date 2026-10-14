@@ -13,7 +13,7 @@ import sys
 
 class GameLoop:
     MOVE_DELAY = 200  # ms between player steps
-    GHOST_MOVE_DELAY = 900
+    GHOST_MOVE_DELAY = 300
 
     def __init__(self):
         pygame.init()

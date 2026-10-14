@@ -30,6 +30,7 @@ class MazeRender:
         self._wall_layer = None
         self._wall_key = None
         self.ghosts = {}
+        self.ghost_targets = {}
 
     def _grid_point(self, col, row):
         """Pixel position of a grid intersection."""
@@ -156,7 +157,6 @@ class MazeRender:
     
         
         player_target = None
-        ghost_targets = []
         self._build_sprites()
         for row in range(self.rows):
             for col in range(self.cols):
@@ -174,8 +174,13 @@ class MazeRender:
                 if cell.has_player:
                     player_target = (center_x, center_y)
                 if cell.has_ghost:
-                    # if 
-                    ghost_targets.append((center_x, center_y))
+                    # print(cell.ghost_id)
+                    self.ghost_targets[cell.ghost_id] = (center_x, center_y)
+                    if cell.ghost_id not in self.ghosts:
+                        self.ghosts[cell.ghost_id] = Mover(self.ghost_targets[cell.ghost_id], 200)
+
+        # print(self.ghost_targets)
+        # exit()
         # self.last_move = self.move_player(move, self.last_move)
         # self.screen.blit(self.player_image, player_target)
         self.last_move = self.move_player(move, self.last_move)
@@ -187,7 +192,17 @@ class MazeRender:
             pos = self.player_mover.update(now)
             rect = self.player_image.get_rect(center=(round(pos.x), round(pos.y)))
             self.screen.blit(self.player_image, rect)
-            for ghost_target in ghost_targets:
-                g_rect = self.ghost.get_rect(center=(ghost_target[0], ghost_target[1]))
+            
+            for id, ghost_target in self.ghost_targets.items():
+                # print(id, ghost_target)
+                # exit()
+                self.ghosts[id].set_target(ghost_target, now)
+                # print(ghost_target)
+                # exit()
+                # exit()
+                pos = self.ghosts[id].update(now)
+                # if id == 0:
+                #     print(pos)
+                g_rect = self.ghost.get_rect(center=(round(pos.x), round(pos.y)))
                 self.screen.blit(self.ghost, g_rect)
             # self.screen.blit(self.ghost, ghost_targets[0])
