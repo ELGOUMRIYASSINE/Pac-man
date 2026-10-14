@@ -18,7 +18,7 @@ class ValidJson(BaseModel):
     levels: List[Level] = Field(
         default_factory=lambda: [Level(width=10, height=10) for _ in range(10)]
     )
-    player_lives: int = Field(gt=0, default=6, le=10)
+    player_lives: int = Field(gt=0, default=6, le=20)
     pacgum_points: int = Field(gt=0, default=13)
     supergum_points: int = Field(gt=0, default=37)
     gost_points: int = Field(gt=0, default=42)
@@ -65,9 +65,9 @@ class ParseConfig:
             if key not in data:
                 print(f"Warning: '{key}' is missing, using default...")
                 data[key] = defaults[key]
-            elif key == "player_lives" and data[key] > 3:
+            elif key == "player_lives" and data[key] < 1:
                 print(
-                    f"Warning: player_lives should be less than 4 and more than 0, using default..."
+                    f"Warning: player_lives should be more than 0, using default..."
                 )
                 data[key] = defaults[key]
             elif key not in ["highscore_file", "levels"] and data[key] < 1:

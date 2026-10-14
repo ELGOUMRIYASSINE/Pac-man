@@ -55,7 +55,7 @@ class GameLoop:
     def load_level(self, data):
         self.player_pos = (
             data.get_height(self.level) // 2,
-            data.get_width(self.level) // 2 +1,
+            data.get_width(self.level) // 2,
         )
         self.maze, req_score, self.ghosts, self.player_pos = Maze.creat_cells(
             self.level, data, self.player_pos, self.ghosts
@@ -74,6 +74,7 @@ class GameLoop:
             )
         else:  # next level: keep score/lives, reset position
             self.player.position = self.player_pos
+            self.player.required_score = req_score
             self.player.required_score += self.player.score
             self.player.positiony, self.player.positionx = self.player_pos
         self.direction = None
@@ -244,10 +245,10 @@ class GameLoop:
 
             if self.screen_state == "MENU":
                 # exit()
-                print("menu")
+                # print("menu")
                 self.menu_frame(events, data, mouse)
             elif self.screen_state == "GAME":
-                print("game")
+                # print("game")
                 # exit()
                 self.game_frame(events, data)
             if self.maze:

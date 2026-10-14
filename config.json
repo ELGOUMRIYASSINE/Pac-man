@@ -14,19 +14,19 @@
     // "highscore_file": "q",
     "levels": [
         {
-            "height": 6,
-            "width": 7   },
+            "height": 5,
+            "width": 5  },
         {
-            "width": 9,
-            "height": 10
+            "width": 6,
+            "height": 6
         },
         {
-            "width": 11,
-            "height": 12
+            "width": 15,
+            "height": 15
         },
         {
-            "width": 7,
-            "height": 7
+            "width": 20,
+            "height": 20
         },
         {
             "width": 7,
@@ -53,7 +53,7 @@
             "height": 7
         }
     ],
-    "player_lives": 5,
+    "player_lives": 20,
     "pacgum_points": -13,
     "supergum_points": 37,
     "gost_points": 65
