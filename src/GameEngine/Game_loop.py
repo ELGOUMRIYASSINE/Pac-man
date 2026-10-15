@@ -5,15 +5,16 @@ from ..rendering.maze_render import MazeRender
 from .move_ghosts import Ghost, MoveGhost
 from ..Maze.Maze import Maze
 from ..rendering.main_menu import MainMenu
+from ..rendering.instructions import Instructions
+
 from typing import Any
 from collections import deque
-
 import sys
 
 
 class GameLoop:
     MOVE_DELAY = 200  # ms between player steps
-    GHOST_MOVE_DELAY = 300
+    GHOST_MOVE_DELAY = 400
 
     def __init__(self):
         pygame.init()
@@ -25,6 +26,7 @@ class GameLoop:
         self.running = True
         self.screen_state = "MENU"
         self.menu = MainMenu(self.screen)
+        self.instructions = Instructions(self.screen)
         self.moving = MovePlayer()
         self.direction = None
         self.last_move = 0
@@ -79,40 +81,73 @@ class GameLoop:
         self.direction = None
 
     def menu_frame(self, events, data, mouse):
+        print("entering menu frame")
         for event in events:
             action = self.menu.handle_event(
                 event, mouse
             )  # "PLAY" / "EXIT" / None
             if action == "PLAY":
-                # print("cc")
+                print("PLAY")
                 self.start_game(data)
                 return
             if action == "EXIT":
-                # print("cc")
+                print("EXITING GAME")
                 self.running = False
                 return
+            if action == "HIGHSCORES":
+                print("HIGHSCORES")
+                # self.screen_state = "HIGHSCORES"
+                return
+            if action == "INSTRUCTIONS":
+                print("INST")
+                self.screen_state = "INSTRUCTIONS"
+                return
         self.menu.draw(mouse)
+    
+    def instructions_frame(self, events, data):
+        for event in events:
+            action = self.instructions.handle_event(
+                event, pygame.mouse.get_pos()
+            )
+            if action == "BACK":
+                self.screen_state = "MENU"
+                return
+        self.instructions.draw(pygame.mouse.get_pos())
 
     def check_collision(self):
-        if self.player is None:
-            return
-        for ghost in self.ghosts:
-            if ghost.eaten or ghost.position != self.player.position:
-                continue
-            if (
-                self.player.super_power
-                and ghost.weak
-                and ghost.position == self.player.position
-            ):
-                self.player.edible_score += 200
-                ghost.eaten = True
-                ghost.respawn_at = pygame.time.get_ticks() + 4000
-                self.maze[ghost.position[0]][ghost.position[1]].edible_ghost = False
-            elif not ghost.weak and ghost.position == self.player.position and not self.player.super_power:
-                self.player.dead = True
-                player_row, player_col = self.player.position
-                self.maze[player_row][player_col].has_player = False
-            return
+            if self.player is None or getattr(self, 'maze_render', None) is None:
+                return
+                
+            # Try to get visual positions. If not initialized yet, wait for next frame.
+            player_mover = self.maze_render.player_mover
+            if player_mover is None:
+                return
+                
+            # Determine a collision threshold (e.g., within 50% of a cell's size)
+            collision_threshold = min(self.maze_render.cell_width, self.maze_render.cell_height) * 0.5
+            
+            for ghost in self.ghosts:
+                if ghost.eaten:
+                    continue
+                    
+                ghost_mover = self.maze_render.ghosts.get(ghost.id)
+                if ghost_mover is None:
+                    continue
+
+                # Calculate pixel distance between player and ghost
+                distance = player_mover.pos.distance_to(ghost_mover.pos)
+
+                # Trigger collision only if visually close enough
+                if distance < collision_threshold:
+                    if self.player.super_power and ghost.weak:
+                        self.player.edible_score += 200
+                        ghost.eaten = True
+                        ghost.respawn_at = pygame.time.get_ticks() + 4000
+                        self.maze[ghost.position[0]][ghost.position[1]].edible_ghost = False
+                    elif not ghost.weak and not self.player.super_power:
+                        self.player.dead = True
+                        player_row, player_col = self.player.position
+                        self.maze[player_row][player_col].has_player = False
 
     def sync_ghost_cells(self):
         for row in self.maze:
@@ -228,7 +263,7 @@ class GameLoop:
         # draw
         self.screen.fill((0, 0, 0))
         # if not move:
-        self.maze_render.draw(self.move)
+        self.maze_render.draw(self.move, self.player)
 
     def entry(self, data):
         while self.running:
@@ -247,10 +282,18 @@ class GameLoop:
             elif self.screen_state == "GAME":
                 print("game")
                 # exit()
-                self.game_frame(events, data)
-            if self.maze:
+                self.game_frame(events, data)            
                 self.screen.fill((0, 0, 0))
-                self.maze_render.draw(self.move)
+                self.maze_render.draw(self.move, self.player)
+            elif self.screen_state == "INSTRUCTIONS":
+                print("instructions")
+                # exit()
+                self.instructions_frame(events, data)
+            if self.maze and self.screen_state == "GAME":
+                self.screen.fill((0, 0, 0))
+                self.maze_render.draw(self.move, self.player)
+                # print(self.player.score)
+                # print(self.player.lives)
             pygame.display.flip()
             self.clock.tick(60)
 
