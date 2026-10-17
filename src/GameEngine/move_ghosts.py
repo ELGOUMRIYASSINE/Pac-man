@@ -56,6 +56,5 @@ class MoveGhost:
             path.append(position)
             position = parents[position]
         path.append(start)
-        ghost.back = list(path)
         ghost.neighboars = list(reversed(path))
         return True

@@ -13,5 +13,4 @@ class Ghost:
     respawn_at: int = 0
     id: int = 0
     neighboars = []
-    back = []
     

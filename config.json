@@ -14,8 +14,8 @@
     // "highscore_file": "q",
     "levels": [
         {
-            "height": 5,
-            "width": 5  },
+            "height": 15,
+            "width": 15  },
         {
             "width": 6,
             "height": 6

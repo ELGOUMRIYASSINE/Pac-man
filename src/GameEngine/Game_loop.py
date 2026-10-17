@@ -53,6 +53,7 @@ class GameLoop:
         self.screen_state = "GAME"
 
     def load_level(self, data):
+        # there is problem here, player take place inside 42 in some cases
         self.player_pos = (
             data.get_height(self.level) // 2,
             data.get_width(self.level) // 2,
@@ -74,8 +75,7 @@ class GameLoop:
             )
         else:  # next level: keep score/lives, reset position
             self.player.position = self.player_pos
-            self.player.required_score = req_score
-            self.player.required_score += self.player.score
+            self.player.required_score = req_score + self.player.score
             self.player.positiony, self.player.positionx = self.player_pos
         self.direction = None
 
@@ -215,28 +215,43 @@ class GameLoop:
                 player.position
             )
             if len(ghost.neighboars) > 1 and not player.super_power:
-                self.maze[ghost.position[0]][
-                    ghost.position[1]
-                ].has_ghost = False
-                ghost.position = ghost.neighboars[1]
-                self.maze[ghost.position[0]][
-                    ghost.position[1]
-                ].has_ghost = True
-                self.maze[ghost.position[0]][
+                if ghost.id % 2 == 0:
+                    self.maze[ghost.position[0]][
+                        ghost.position[1]
+                    ].has_ghost = False
+                    ghost.position = ghost.neighboars[1]
+                    self.maze[ghost.position[0]][
+                        ghost.position[1]
+                    ].has_ghost = True
+                    self.maze[ghost.position[0]][
+                                                        ghost.position[1]
+                                                    ].ghost_id = ghost.id
+                    self.last_ghost_moves[index] = now
+                else:
+                    moves = MoveGhost()._get_neighboars(ghost.position, self.maze, maze_size)
+                    self.maze[ghost.position[0]][
+                                                        ghost.position[1]
+                                                    ].has_ghost = False
+                    ghost.position = min(moves, key=lambda x:abs(x[0] - player.position[0]) + abs(x[1] - player.position[1]))
+                    self.maze[ghost.position[0]][
+                        ghost.position[1]
+                    ].has_ghost = True
+                    self.maze[ghost.position[0]][
                                                     ghost.position[1]
                                                 ].ghost_id = ghost.id
-                self.last_ghost_moves[index] = now
+                    self.last_ghost_moves[index] = now
             elif  len(ghost.neighboars) > 1 and player.super_power:
+                moves = MoveGhost()._get_neighboars(ghost.position, self.maze, maze_size)
                 self.maze[ghost.position[0]][
-                                    ghost.position[1]
-                                ].has_ghost = False
-                ghost.position = ghost.neighboars[0]
+                                                    ghost.position[1]
+                                                ].has_ghost = False
+                ghost.position = max(moves, key=lambda x:abs(x[0] - player.position[0]) + abs(x[1] - player.position[1]))
                 self.maze[ghost.position[0]][
                     ghost.position[1]
                 ].has_ghost = True
                 self.maze[ghost.position[0]][
-                                                    ghost.position[1]
-                                                ].ghost_id = ghost.id
+                                                ghost.position[1]
+                                            ].ghost_id = ghost.id
                 self.last_ghost_moves[index] = now
 
             self.check_collision()
