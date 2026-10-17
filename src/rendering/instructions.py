@@ -1,65 +1,101 @@
 import pygame
-import sys
-
-# start game
-# View Highscores
-# Instructions 
+import os
 
 class Instructions:
-    WHITE = (255,255,255)
-    LIGHT = (170,170,170)
-    DARK = (100,100,100)
-    yellow = (255, 255, 0)
-    white = (255, 255, 255)
-    BG = (60,25,60)
+    
+    WHITE = (255, 255, 255)
+    LIGHT = (170, 170, 170)
+    DARK = (100, 100, 100)
+    YELLOW = (255, 255, 0)
+    BG = (60, 25, 60)
+
     def __init__(self, screen):
-        # w, h = pygame.display.get_surface().get_size()
+        pygame.init()  # Initialize all imported pygame modules
+        pygame.font.init()  # Initialize the font module
+    
         self.screen = screen 
         self.width, self.height = self.screen.get_size()
-        self.font_title = pygame.font.Font(
-            "assets/PressStart2P-Regular.ttf", 40
-        )
-        self.font_body = pygame.font.Font(
-            "assets/joystix monospace.otf", 30
-        )
-        self.font_body2 = pygame.font.Font(
-            "assets/Silkscreen-Bold.ttf", 20
-        )
-        self.yellow = (255, 255, 0)
-        self.white = (255, 255, 255)
+        
+        # Fonts
+        self.font_title = pygame.font.Font("assets/PressStart2P-Regular.ttf", 40)
+        self.font_body = pygame.font.Font("assets/joystix monospace.otf", 30)
+        self.font_body2 = pygame.font.Font("assets/Silkscreen-Bold.ttf", 20)
+
+        # Load file once during initialization, not 60 times a second in the draw loop
+        self.lines = []
+        if os.path.exists("assets/instructions.txt"):
+            with open("assets/instructions.txt", "r") as file:
+                self.lines = [line.strip() for line in file.readlines()]
+        else:
+            self.lines = ["instructions.txt not found."]
+
+        # Set up a Back button to return to the main menu
         button_width, button_height = 140, 50
-        spacing = 80  # vertical gap between buttons
-        center_x = self.width // 2
+        self.back_button = pygame.Rect(
+            self.width // 2 - button_width // 2,
+            self.height - 100,  # Positioned near the bottom
+            button_width,
+            button_height
+        )
 
-        # Vertical center of the whole menu block
-        start_y = self.height // 2 - (spacing * 1.5)
+    def handle_event(self, event, mouse):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.back_button.collidepoint(mouse):
+                return "BACK"
+        return None
 
-
-    # def handle_event(self, event, mouse):
-    #     if event.type == pygame.MOUSEBUTTONDOWN:
-    #         if self.start_button.collidepoint(mouse):
-    #             return "PLAY"
-    #         if self.exit_button.collidepoint(mouse):
-    #             return "EXIT"
-    #     return None
-    # def get_instructions(self):
-    #     pass
-
-    def draw(self):
+    def draw(self, mouse):
+        # print("ccccc")
         self.screen.fill((0, 0, 0))
-        for line in open("instructions.txt", "r"):
-            text = self.font_body.render("line", True, self.yellow)
-            self.screen.blit(text, text.get_rect(center=self.screen.center))                    
-        # pygame.draw.rect(self.screen, self.LIGHT if self.start_button.collidepoint(mouse) else self.DARK, self.start_button)
-        # pygame.draw.rect(self.screen, self.LIGHT if self.exit_button.collidepoint(mouse) else self.DARK, self.exit_button)
-        # pygame.draw.rect(self.screen, self.LIGHT if self.highscores_button.collidepoint(mouse) else self.DARK, self.highscores_button)
-        # pygame.draw.rect(self.screen, self.LIGHT if self.instructions.collidepoint(mouse) else self.DARK, self.instructions)
+        
+        # Draw Title
+        title_text = self.font_title.render("INSTRUCTIONS", True, self.YELLOW)
+        self.screen.blit(title_text, title_text.get_rect(center=(self.width // 2, 80)))
 
-        # start_text = self.font_title.render("PLay", True, self.yellow)
-        # score_text = self.font_title.render("View Hightscores", True, self.yellow)
-        # instru_text = self.font_title.render("Instructions", True, self.yellow)
-        # exit_text = self.font_title.render("Exit", True, self.yellow)
+        # Draw text lines with vertical spacing
+        start_y = 180
+        line_spacing = 40
+        for index, line in enumerate(self.lines):
+            # Pass the variable 'line', not the string "line"
+            text_surface = self.font_body2.render(line, True, self.WHITE)
+            # Center horizontally, offset vertically based on index
+            text_rect = text_surface.get_rect(center=(self.width // 2, start_y + (index * line_spacing)))
+            self.screen.blit(text_surface, text_rect)
 
-        # self.screen.blit(score_text, score_text.get_rect(center=self.highscores_button.center))
-        # self.screen.blit(instru_text, instru_text.get_rect(center=self.instructions.center))
-        # self.screen.blit(exit_text, exit_text.get_rect(center=self.exit_button.center))
+        # Draw Back Button (hover effect)
+        pygame.draw.rect(
+            self.screen, 
+            self.LIGHT if self.back_button.collidepoint(mouse) else self.DARK, 
+            self.back_button
+        )
+        
+        # Draw Back Button Text
+        back_text = self.font_body2.render("Back", True, self.YELLOW)
+        self.screen.blit(back_text, back_text.get_rect(center=self.back_button.center))
+        
+# if __name__ == "__main__":
+#     pygame.init()
+#     screen = pygame.display.set_mode((800, 600))
+#     pygame.display.set_caption("Instructions")
+#     clock = pygame.time.Clock()
+
+#     instructions = Instructions(screen)
+
+#     running = True
+#     while running:
+#         mouse = pygame.mouse.get_pos()
+
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 running = False
+
+#             result = instructions.handle_event(event, mouse)
+#             if result == "BACK":
+#                 print("Back button clicked")  # switch to your main menu here
+#                 running = False
+
+#         instructions.draw(mouse)
+#         pygame.display.flip()   # <-- makes the drawing visible
+#         clock.tick(60)          # limit to 60 FPS
+
+#     pygame.quit()

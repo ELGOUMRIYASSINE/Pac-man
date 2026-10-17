@@ -50,9 +50,14 @@ class MainMenu:
             if self.start_button.collidepoint(mouse):
                 return "PLAY"
             if self.exit_button.collidepoint(mouse):
-                return "EXIT"
+                return "EXIT"            
+            if self.highscores_button.collidepoint(mouse):
+                return "HIGHSCORES"
+            if self.instructions.collidepoint(mouse):
+                return "INSTRUCTIONS"
         return None
     def draw(self, mouse):
+        print("drawing menu")
         self.screen.fill((0, 0, 0))
 
 
