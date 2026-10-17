@@ -214,7 +214,7 @@ class GameLoop:
                 ghost,
                 player.position
             )
-            if len(ghost.neighboars) > 1:
+            if len(ghost.neighboars) > 1 and not player.super_power:
                 self.maze[ghost.position[0]][
                     ghost.position[1]
                 ].has_ghost = False
@@ -226,6 +226,19 @@ class GameLoop:
                                                     ghost.position[1]
                                                 ].ghost_id = ghost.id
                 self.last_ghost_moves[index] = now
+            elif  len(ghost.neighboars) > 1 and player.super_power:
+                self.maze[ghost.position[0]][
+                                    ghost.position[1]
+                                ].has_ghost = False
+                ghost.position = ghost.neighboars[0]
+                self.maze[ghost.position[0]][
+                    ghost.position[1]
+                ].has_ghost = True
+                self.maze[ghost.position[0]][
+                                                    ghost.position[1]
+                                                ].ghost_id = ghost.id
+                self.last_ghost_moves[index] = now
+
             self.check_collision()
         self.sync_ghost_cells()
         # draw
