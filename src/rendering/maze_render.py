@@ -1,7 +1,10 @@
 import pygame
 from .move import Mover
+
+
 class MazeRender:
-    def __init__(self, maze, screen: pygame.Surface):
+    def __init__(self, maze, screen: pygame.Surface,
+                 player_step_ms: int = 200, ghost_step_ms: int = 400):
         self.maze = maze
         self.screen = screen
         self.rows = len(maze)
@@ -9,33 +12,38 @@ class MazeRender:
         self.screen_width, self.screen_height = self.screen.get_size()
         self.wall_thinckness = 10
         self.radius = self.wall_thinckness / 2
-        self.wall_color = (0, 0, 205)  
+        self.wall_color = (0, 0, 205)
         self.padding = 10
-        self.dot_color = (255, 184, 174)  # classic pale pink/white pac-dot color
-        # self.pacman = pygame.image.load("assets/pacman.jpg").convert()
-        self.player_images = ["1.png","2.png"]
-        self.upload_player = None
+        self.hud_height = 40  # band above the maze, so the HUD hides nothing
+        self.dot_color = (255, 184, 174)  # classic pale pink pac-dot color
+        self.player_images = ["1.png", "2.png"]
         self.anim_delay = 150
         self.state_counter = 0
-        # self.player_image = self.upload_player[self.state_counter]
         self.last_anim_time = pygame.time.get_ticks()
-        self.last_move = None
-        self.ghost = None
-        self.cell_width = 0
-        self.cell_height = 0
+        self.cell_width, self.cell_height = self.cell_sizes()
+        self.player_step_ms = player_step_ms
+        self.ghost_step_ms = ghost_step_ms
+        # the game data this renderer draws (see bind_entities)
+        self.player = None
+        self.ghost_list = []
+        # the sprites on screen: one Mover per entity
         self.player_mover = None
+        self.ghosts = {}
         # --- maze design (only used by the wall drawing below) ---
-        self.wall_inner_color = (4, 4, 40)        # dark core of the hollow walls
+        self.wall_inner_color = (4, 4, 40)        # dark core of the walls
         self.wall_glow_color = (0, 40, 255, 60)   # soft halo around the walls
         self._wall_layer = None
         self._wall_key = None
-        self.ghosts = {}
-        self.ghost_targets = {}
+        self.score_font = pygame.font.Font(
+            "assets/PressStart2P-Regular.ttf", 20
+        )
+        self._build_sprites()
 
     def _grid_point(self, col, row):
         """Pixel position of a grid intersection."""
+        top = self.radius + self.hud_height
         return (int(col * self.cell_width) + self.radius,
-                int(row * self.cell_height) + self.radius)
+                int(row * self.cell_height) + top)
 
     def _wall_segments(self):
         """Every wall once (a shared wall between two cells is not doubled)."""
@@ -65,7 +73,7 @@ class MazeRender:
     def _build_wall_layer(self):
         width, height = self.screen.get_size()
         t = self.wall_thinckness
-        inner_t = max(1, t - 6)                     # leaves a ~3px colored outline
+        inner_t = max(1, t - 6)  # leaves a ~3px colored outline
 
         lines = [(self._grid_point(*a), self._grid_point(*b))
                  for a, b in self._wall_segments()]
@@ -77,7 +85,8 @@ class MazeRender:
             pygame.draw.line(glow, self.wall_glow_color, start, end, t * 3)
         for p in joints:
             pygame.draw.circle(glow, self.wall_glow_color, p, int(t * 1.5))
-        small = pygame.transform.smoothscale(glow, (max(1, width // 4), max(1, height // 4)))
+        small_size = (max(1, width // 4), max(1, height // 4))
+        small = pygame.transform.smoothscale(glow, small_size)
         glow = pygame.transform.smoothscale(small, (width, height))
 
         layer = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -94,117 +103,140 @@ class MazeRender:
         for start, end in lines:
             pygame.draw.line(layer, self.wall_inner_color, start, end, inner_t)
         for p in joints:
-            pygame.draw.circle(layer, self.wall_inner_color, p, max(1, inner_t // 2))
+            pygame.draw.circle(
+                layer, self.wall_inner_color, p, max(1, inner_t // 2)
+            )
 
         self._wall_layer = layer
         self._wall_key = self._wall_signature()
 
-    def draw_score(self, player):
-        font = pygame.font.Font("assets/PressStart2P-Regular.ttf", 20)
-        score_text = font.render(f"Score: {player.score}", True, (255, 255, 0))
-        lives_text = font.render(f"Lives: {player.lives}", True, (255, 255, 0))
+    def draw_score(self):
+        score = f"Score: {self.player.score}"
+        lives = f"Lives: {self.player.lives}"
+        score_text = self.score_font.render(score, True, (255, 255, 0))
+        lives_text = self.score_font.render(lives, True, (255, 255, 0))
         self.screen.blit(score_text, (10, 10))
-        self.screen.blit(lives_text, (10, 40))
-    
-    def draw(self, move=None, player=None):
-        self.cell_width, self.cell_height = self.cell_sizes()
+        self.screen.blit(
+            lives_text, (self.screen_width - lives_text.get_width() - 10, 10)
+        )
+
+    def draw(self):
         self.screen.fill((0, 0, 0))
 
         if self._wall_key != self._wall_signature():
             self._build_wall_layer()
         self.screen.blit(self._wall_layer, (0, 0))
 
-        self.draw_content(move)
-        self.draw_score(player)
+        self.draw_content()
+        self.draw_score()
 
-
-    def move_player(self, move, last_move):
-        if not move:
-            move = self.last_move
-            if move == "UP":
-                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 270)
-            if move == "DOWN":
-                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 90) # good
-            if move == "LEFT":
-                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 360)
-            if move == "RIGHT":
-                self.player_image = pygame.transform.rotate(self.upload_player[self.state_counter], 180)
-        return move
     def cell_sizes(self):
         padding = 10
         available_width = self.screen_width - padding
-        available_height = self.screen_height - padding
+        available_height = self.screen_height - padding - self.hud_height
 
         cell_width = available_width / self.cols
         cell_height = available_height / self.rows
         return cell_width, cell_height
+
     def _center(self, row, col):
+        top = self.radius + self.hud_height
         return ((col + 0.5) * self.cell_width + self.radius,
-                (row + 0.5) * self.cell_height + self.radius)
+                (row + 0.5) * self.cell_height + top)
+
     def _build_sprites(self):
-        player_size = int(min(self.cell_width, self.cell_height) * 0.8)
-        self.upload_player = [
-            pygame.transform.scale(pygame.image.load(f"assets/{img}").convert_alpha(), (player_size, player_size)) for img in self.player_images
+        """Load and prepare every image once: disk is too slow per frame."""
+        size = int(min(self.cell_width, self.cell_height) * 0.8)
+        frames = [
+            pygame.transform.scale(
+                pygame.image.load(f"assets/{img}").convert_alpha(),
+                (size, size),
+            )
+            for img in self.player_images
         ]
-        self.ghost = pygame.transform.scale(pygame.image.load("assets/ghost.webp").convert_alpha(), (player_size, player_size))
-        self.p_rotations = {
-            "UP": pygame.transform.rotate(self.upload_player[self.state_counter], 270),
-            "DOWN": pygame.transform.rotate(self.upload_player[self.state_counter], 90),
-            "LEFT": pygame.transform.rotate(self.upload_player[self.state_counter], 360),
-            "RIGHT": pygame.transform.rotate(self.upload_player[self.state_counter], 180),
+        angles = {None: 0, "UP": 270, "DOWN": 90, "LEFT": 0, "RIGHT": 180}
+        self.player_frames = {
+            move: [pygame.transform.rotate(frame, angle) for frame in frames]
+            for move, angle in angles.items()
         }
-        self.player_image = self.p_rotations.get(self.last_move, self.upload_player[self.state_counter])
-    
-        
-    def draw_content(self, move):
+        self.ghost = pygame.transform.scale(
+            pygame.image.load("assets/ghost.webp").convert_alpha(),
+            (size, size),
+        )
+        # blue version: the player must see which ghosts can be eaten
+        self.weak_ghost = self.ghost.copy()
+        for x in range(size):
+            for y in range(size):
+                r, g, b, a = self.weak_ghost.get_at((x, y))
+                self.weak_ghost.set_at((x, y), (b, g, r, a))  # swap red/blue
+
+    def bind_entities(self, player, ghosts):
+        """Give the renderer its data, the sprites start on their cells."""
+        self.player = player
+        self.ghost_list = ghosts
+        self.player_mover = Mover(
+            self._center(*player.position), self.player_step_ms
+        )
+        self.ghosts = {
+            ghost.id: Mover(self._center(*ghost.position), self.ghost_step_ms)
+            for ghost in ghosts
+        }
+
+    def snap_ghost(self, ghost, now):
+        self.ghosts[ghost.id].snap(self._center(*ghost.position), now)
+
+    def snap_all(self, now):
+        self.player_mover.snap(self._center(*self.player.position), now)
+        for ghost in self.ghost_list:
+            self.snap_ghost(ghost, now)
+
+    def update_entities(self, now):
+        """Move every sprite towards its logical cell. Call once per frame.
+
+        Reads ghost.position directly: a cell has room for one ghost_id only,
+        so two ghosts on the same cell would lose one of them.
+        """
+        self.player_mover.set_target(self._center(*self.player.position), now)
+        self.player_mover.update(now)
+        for ghost in self.ghost_list:
+            if ghost.eaten:
+                continue
+            mover = self.ghosts[ghost.id]
+            mover.set_target(self._center(*ghost.position), now)
+            mover.update(now)
+
+    def draw_content(self):
         now = pygame.time.get_ticks()
 
         if now - self.last_anim_time >= self.anim_delay:
-            self.state_counter = (self.state_counter + 1) % len(self.player_images)
+            frame_count = len(self.player_images)
+            self.state_counter = (self.state_counter + 1) % frame_count
             self.last_anim_time = now
-    
-        self.cell_width, self.cell_height = self.cell_sizes()
-    
-        
-        player_target = None
-        self._build_sprites()
+
+        size = min(self.cell_width, self.cell_height)
+        big_dot = max(2, int(size * 0.12))
+        small_dot = max(2, int(size * 0.05))
         for row in range(self.rows):
             for col in range(self.cols):
                 cell = self.maze[row][col]
+                if cell.supgum:
+                    pygame.draw.circle(self.screen, self.dot_color,
+                                       self._center(row, col), big_dot)
+                elif cell.gum:
+                    pygame.draw.circle(self.screen, self.dot_color,
+                                       self._center(row, col), small_dot)
 
-                center_x, center_y = self._center(row, col)
+        image = self.player_frames[self.player.facing][self.state_counter]
+        pos = self.player_mover.pos
+        self.screen.blit(
+            image, image.get_rect(center=(round(pos.x), round(pos.y)))
+        )
 
-                if getattr(cell, "supgum", True):
-                    dot_radius = max(2, int(min(self.cell_width, self.cell_height) * 0.12))
-                    pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)
-                elif getattr(cell, "gum", True):
-                    dot_radius = max(2, int(min(self.cell_width, self.cell_height) * 0.05))
-                    pygame.draw.circle(self.screen, self.dot_color, (center_x, center_y), dot_radius)
-                
-                if cell.has_player:
-                    player_target = (center_x, center_y)
-                if cell.has_ghost:
-                    # print(cell.ghost_id)
-                    self.ghost_targets[cell.ghost_id] = (center_x, center_y)
-                    if cell.ghost_id not in self.ghosts:
-                        self.ghosts[cell.ghost_id] = Mover(self.ghost_targets[cell.ghost_id], 400)
-
-        # print(self.ghost_targets)
-        # exit()
-        # self.last_move = self.move_player(move, self.last_move)
-        # self.screen.blit(self.player_image, player_target)
-        self.last_move = self.move_player(move, self.last_move)
-
-        if player_target is not None:
-            if self.player_mover is None:
-                self.player_mover = Mover(player_target, 200)
-            self.player_mover.set_target(player_target, now)
-            pos = self.player_mover.update(now)
-            rect = self.player_image.get_rect(center=(round(pos.x), round(pos.y)))
-            self.screen.blit(self.player_image, rect)
-            
-            for id, ghost_target in self.ghost_targets.items():
-                self.ghosts[id].set_target(ghost_target, now)
-                pos = self.ghosts[id].update(now)
-                g_rect = self.ghost.get_rect(center=(round(pos.x), round(pos.y)))
-                self.screen.blit(self.ghost, g_rect)
+        for ghost in self.ghost_list:
+            if ghost.eaten:
+                continue
+            image = self.weak_ghost if ghost.weak else self.ghost
+            pos = self.ghosts[ghost.id].pos
+            self.screen.blit(
+                image, image.get_rect(center=(round(pos.x), round(pos.y)))
+            )

@@ -5,6 +5,9 @@ class MetaData:
     def __init__(self, data) -> None:
         self.data = data
 
+    def get_level_count(self) -> int:
+        return len(self.data["levels"])
+
     def get_height(self, level: int) -> int:
         return self.data["levels"][level]["height"]
 

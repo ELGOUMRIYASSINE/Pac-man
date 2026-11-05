@@ -1,5 +1,6 @@
 from ..Maze.Maze import Cell, Tuple, List, dataclass, Ghost
 from collections import deque
+from typing import Optional
 
 
 @dataclass
@@ -58,3 +59,39 @@ class MoveGhost:
         path.append(start)
         ghost.neighboars = list(reversed(path))
         return True
+
+    def next_cell(
+        self,
+        ghost: Ghost,
+        maze: List[List[Cell]],
+        h_w: Tuple[int, int],
+        player_position: Tuple[int, int],
+    ) -> Optional[Tuple[int, int]]:
+        """Where the ghost goes on its next step (None = stay).
+
+        - weak ghost: runs away from the player
+        - even id: follows the shortest path (BFS)
+        - odd id: takes the neighbour closest to the player
+        Weak and odd ghosts never turn back unless it is a dead end, otherwise
+        they shake forever between two cells.
+        """
+        if ghost.position == player_position:
+            return None
+        if not ghost.weak and ghost.id % 2 == 0:
+            self.move_ghost_bfs(
+                ghost.position, maze, h_w, ghost, player_position
+            )
+            return ghost.neighboars[1] if len(ghost.neighboars) > 1 else None
+
+        moves = self._get_neighboars(ghost.position, maze, h_w)
+        moves = [cell for cell in moves if cell != ghost.previous] or moves
+        if not moves:
+            return None
+
+        def distance(cell: Tuple[int, int]) -> int:
+            return (abs(cell[0] - player_position[0])
+                    + abs(cell[1] - player_position[1]))
+
+        return max(moves, key=distance) if ghost.weak else min(
+            moves, key=distance
+        )

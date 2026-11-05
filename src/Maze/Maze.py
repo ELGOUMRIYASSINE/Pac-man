@@ -4,7 +4,7 @@ from typing import Tuple, List
 from mazegenerator import MazeGenerator
 from .get_maze_bylevel import LevelMaze
 from ..metadata import MetaData
-from ..GameEngine.gosts import  Ghost
+from ..GameEngine.gosts import Ghost
 
 
 @dataclass
@@ -17,99 +17,87 @@ class Cell:
     supgum: bool = False
     gum: bool = False
     has_ghost: bool = False
-    ghost_id:int | None = None
+    ghost_id: int | None = None
     has_player: bool = False
-    edible_ghost:bool = False
-    # ghost_type: str = None
+    edible_ghost: bool = False
     palyer_init_pos: bool = False
-    
 
 
 class Directions(IntEnum):
-    N=1
-    E=2
-    S=4
-    W=8
+    N = 1
+    E = 2
+    S = 4
+    W = 8
+
+
+SEALED = Directions.N | Directions.E | Directions.S | Directions.W
 
 
 @dataclass
 class Maze:
 
+    @staticmethod
+    def _open_cell_near(
+        grid: List[List[int]], wanted: Tuple[int, int]
+    ) -> Tuple[int, int]:
+        """Closest cell to `wanted` that is not sealed inside the '42'."""
+        open_cells = [
+            (row, col)
+            for row, line in enumerate(grid)
+            for col, walls in enumerate(line)
+            if walls != SEALED
+        ]
+        return min(
+            open_cells,
+            key=lambda c: abs(c[0] - wanted[0]) + abs(c[1] - wanted[1]),
+            default=wanted,
+        )
+
     @classmethod
-    def creat_cells(cls, level: int, data:MetaData, player_position: Tuple[int, int], ghosts:List[Ghost]):
-
+    def creat_cells(
+        cls,
+        level: int,
+        data: MetaData,
+        player_position: Tuple[int, int],
+        ghosts: List[Ghost],
+    ) -> Tuple[List[List[Cell]], List[Ghost], Tuple[int, int]]:
         maze: MazeGenerator = LevelMaze.get_maze_bylevel(level, data)
-        height:int = maze._height
-        width:int = maze._width
-        maze_obj = []
-        score:int = 0
+        height: int = maze._height
+        width: int = maze._width
+        player_position = cls._open_cell_near(maze.maze, player_position)
 
-        a = 0
+        # ghosts start on the corners (dict.fromkeys: tiny mazes share corners)
+        corners = list(dict.fromkeys([
+            (0, 0), (0, width - 1), (height - 1, 0), (height - 1, width - 1)
+        ]))
+        spawns = [c for c in corners if c != player_position]
+        spawns = spawns or [player_position]
+
+        maze_obj = []
         for n in range(height):
             cells = []
             for m in range(width):
-                closed = 0
                 cell = Cell((n, m))
-                if (n , m) == player_position:
+                walls = maze.maze[n][m]
+                cell.North = bool(walls & Directions.N)
+                cell.Est = bool(walls & Directions.E)
+                cell.South = bool(walls & Directions.S)
+                cell.West = bool(walls & Directions.W)
+                if (n, m) == player_position:
                     cell.has_player = True
                     cell.palyer_init_pos = True
-                    
-                else:
-                    if m == 0 and n == 0:
-                        cell.supgum = True
-                        cell.has_ghost = True
-                        ghosts[a].id = a
-                        cell.ghost_id = a
-                        ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        a += 1
-                        score += data.get_supgum_points()
-                        
-                    elif m == width - 1 and n == 0:
-                        cell.supgum = True
-                        cell.has_ghost = True
-                        score += data.get_supgum_points()
-                        ghosts[a].id = a
-                        cell.ghost_id = a
-                        ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        a += 1
-                    elif m == 0 and n == height -1:
-                        cell.supgum = True
-                        cell.has_ghost = True
-                        ghosts[a].id = a
-                        cell.ghost_id = a
-                        ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        a += 1
-                        score += data.get_supgum_points()
-                        
-                    elif m == width -1 and n == height - 1:
-                        cell.supgum = True
-                        cell.has_ghost = True
-                        ghosts[a].id = a
-                        cell.ghost_id = a
-                        ghosts[a].position = (n, m)
-                        ghosts[a].home = (n, m)
-                        a += 1
-                        score += data.get_supgum_points()
-                        
-                if maze.maze[n][m] & Directions.N:
-                    cell.North = True
-                    closed += 1
-                if maze.maze[n][m] & Directions.E:
-                    cell.Est = True
-                    closed += 1
-                if maze.maze[n][m] & Directions.S:
-                    cell.South = True
-                    closed += 1
-                if maze.maze[n][m] & Directions.W:
-                    cell.West = True
-                    closed += 1
-                if closed !=4  and not cell.supgum and not cell.palyer_init_pos:
+                elif (n, m) in corners:
+                    cell.supgum = True
+                elif walls != SEALED:
                     cell.gum = True
-                    score += data.get_pacgum_points()
                 cells.append(cell)
-
             maze_obj.append(cells)
-        return maze_obj, score, ghosts, player_position
+
+        for index, ghost in enumerate(ghosts):
+            ghost.id = index
+            ghost.home = spawns[index % len(spawns)]
+            ghost.reset()
+            cell = maze_obj[ghost.home[0]][ghost.home[1]]
+            cell.has_ghost = True
+            cell.ghost_id = index
+        return maze_obj, ghosts, player_position
