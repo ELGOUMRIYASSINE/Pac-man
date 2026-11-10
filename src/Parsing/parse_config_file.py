@@ -10,20 +10,15 @@ This class validate the json file data using pydantic
 
 class Level(BaseModel):
     width: int = Field(gt=0, default=10)
-    height: int = Field(gt=0, default=30)
+    height: int = Field(gt=0, default=10)
 
 
 class ValidJson(BaseModel):
-    # this forbid to add extra params to the config file
-    # model_config = ConfigDict(extra="forbid")
 
-    highscore_file: str = Field(
-        min_length=1, max_length=20, default="score_file"
-    )
     levels: List[Level] = Field(
-        default_factory=lambda: [Level(width=10, height=30) for _ in range(10)]
+        default_factory=lambda: [Level(width=10, height=10) for _ in range(10)]
     )
-    player_lives: int = Field(gt=0, default=3)
+    player_lives: int = Field(gt=0, default=6, le=20)
     pacgum_points: int = Field(gt=0, default=13)
     supergum_points: int = Field(gt=0, default=37)
     gost_points: int = Field(gt=0, default=42)
@@ -70,16 +65,14 @@ class ParseConfig:
             if key not in data:
                 print(f"Warning: '{key}' is missing, using default...")
                 data[key] = defaults[key]
-
+            elif key == "player_lives" and data[key] < 1:
+                print(
+                    f"Warning: player_lives should be more than 0, using default..."
+                )
+                data[key] = defaults[key]
             elif key not in ["highscore_file", "levels"] and data[key] < 1:
                 print(
                     f"Warning: {key} -> {data[key]} invalid, using default..."
-                )
-                data[key] = defaults[key]
-
-            elif key == "highscore_file" and (not isinstance(data[key], str) or not data[key]):
-                print(
-                    "Warning: highscore filename should be none emptystring, using default..."
                 )
                 data[key] = defaults[key]
 
@@ -104,7 +97,7 @@ class ParseConfig:
                         f"Warning: levels[{i}].width is missing, using default..."
                     )
 
-                if width < 1 or width > 90:
+                if width < 1 or width > 900:
                     print(
                         f"Warning: levels[{i}].width value invalid, using default..."
                     )
@@ -112,17 +105,18 @@ class ParseConfig:
 
                 height = level.get("height", None)
                 if not height:
-                    height = 30
+                    height = 10
                     print(
                         f"Warning: levels[{i}].height is missing, using default..."
                     )
 
-                if height < 1 or height > 90:
+                if height < 1 or height > 900:
                     print(
                         f"Warning: levels[{i}].height value invalid, using default..."
                     )
-                    height = 30
+                    height = 10
 
                 data["levels"][i] = {"width": width, "height": height}
         validated = ValidJson.model_validate(data)
+        # model_dump make the output of model validate (basemodel object) a dictionnary
         return validated.model_dump()

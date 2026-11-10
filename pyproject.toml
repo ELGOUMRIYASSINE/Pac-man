@@ -5,10 +5,13 @@ description = "Reimplementing the original Pac-Man game"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
-    "argparse>=1.4.0",
     "cleanpy>=0.5.1",
     "mazegenerator>=1.2.1",
-    "pathlib>=1.0.1",
     "pydantic>=2.13.5",
     "pygame>=2.6.1",
 ]
+
+[tool.uv.sources]
+mazegenerator = { path = "mazegenerator-00001/mazegenerator-2.1.0-py3-none-any.whl" }
+
+

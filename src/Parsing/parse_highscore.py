@@ -2,7 +2,7 @@ from .parse_args import dataclass
 from pathlib import Path
 import json
 from pydantic import BaseModel, Field, ValidationError
-from typing import Any
+from typing import Any, Dict
 
 
 class ValidScores(BaseModel):
@@ -13,7 +13,7 @@ class ValidScores(BaseModel):
 @dataclass
 class Parsehighscore:
 
-    def get_name(self, scores) -> str:
+    def get_name(self, scores: Dict[str, int]) -> str:
         user: str = input("Enter your name!\n")
         if user in scores.keys():
             print("Error: player-name already exists, enter diffrent name")
@@ -33,7 +33,7 @@ class Parsehighscore:
         scores: Path = Path.cwd() / "scores.json"
         if not scores.exists():
             print("Warning: missing scores file, using default...")
-            score = {"faty": 100, "yassine": 200, "hamza": 250, "fatyzaa": 900}
+            score = {}
             with open("scores.json", "w") as f:
                 json.dump(score, f, indent=4)
                 data = json.dumps(score, indent=4)
@@ -41,10 +41,6 @@ class Parsehighscore:
             data = scores.read_text(encoding="utf-8")
             if data == "":
                 score = {
-                    "faty": 100,
-                    "yassine": 200,
-                    "hamza": 250,
-                    "fatyzaa": 900,
                 }
                 data = json.dumps(score, indent=4)
         return data
@@ -55,7 +51,7 @@ class Parsehighscore:
             data = json.loads(self.get_file)
         except json.JSONDecodeError:
             print("Warning: invalid scores.json format, using default...")
-            score = {"faty": 100, "yassine": 200, "hamza": 250, "fatyzaa": 900}
+            score = {}
             data = json.loads(json.dumps(score))
 
         for key, val in data.items():
@@ -70,12 +66,6 @@ class Parsehighscore:
                     e.errors()[0]["msg"],
                     ",using default...",
                 )
-                score = {
-                    "faty": 100,
-                    "yassine": 200,
-                    "hamza": 250,
-                    "fatyzaa": 900,
-                }
+                score = {}
                 data = json.loads(json.dumps(score))
         return data
-
