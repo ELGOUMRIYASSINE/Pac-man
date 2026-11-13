@@ -1,18 +1,17 @@
+"""Parse the command-line arguments used to locate the game configuration."""
+
 from argparse import ArgumentParser, ArgumentError
 from dataclasses import dataclass
 from pathlib import Path
 
-"""
-This class parse the arguments will the program recieve, as the config file
-check if the config file exists and return it content
-"""
-
 
 @dataclass
 class Args:
+    """Read and validate the command-line configuration-file argument."""
 
     @property
     def get_args(self) -> str:
+        """Return the contents of the expected configuration file."""
         parser = ArgumentParser()
         path_file = Path.cwd() / "config.json"
         if not path_file.exists():
@@ -24,4 +23,3 @@ class Args:
                 None, 'Error: wrong file name (should be "config.json")'
             )
         return path_file.read_text(encoding="utf-8")
-    

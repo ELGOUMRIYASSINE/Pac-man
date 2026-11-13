@@ -1,19 +1,20 @@
+"""Load, normalize, and validate the game's JSON configuration."""
+
 from .parse_args import dataclass, Args
 import json
-from pydantic import BaseModel, Field, ValidationError
-from typing import List, Union, Dict, Any
-
-"""
-This class validate the json file data using pydantic
-"""
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any
 
 
 class Level(BaseModel):
+    """Describe the dimensions of one maze level."""
+
     width: int = Field(gt=0, default=10)
     height: int = Field(gt=0, default=10)
 
 
 class ValidJson(BaseModel):
+    """Define validated configuration values and their defaults."""
 
     levels: List[Level] = Field(
         default_factory=lambda: [Level(width=10, height=10) for _ in range(10)]
@@ -24,18 +25,13 @@ class ValidJson(BaseModel):
     gost_points: int = Field(gt=0, default=42)
 
 
-"""
-This class get the content of the config file,
-filter and fetch the data from it, and return the valid json data
-with ignoring the comments
-"""
-
-
 @dataclass
 class ParseConfig:
+    """Read configuration text and return its validated mapping."""
 
     @property
     def _clean_content(self) -> str:
+        """Remove blank lines and whole-line comments from the JSON text."""
         content1 = Args().get_args
         content = content1.split("\n")
         json_content = []
@@ -52,6 +48,7 @@ class ParseConfig:
 
     @property
     def load_json(self) -> Dict[str, Any]:
+        """Validate configuration data and return it as a plain dictionary."""
         defaults = ValidJson().model_dump()
         default_level = Level().model_dump()
         try:
@@ -67,18 +64,20 @@ class ParseConfig:
                 data[key] = defaults[key]
             elif key == "player_lives" and data[key] < 1:
                 print(
-                    f"Warning: player_lives should be more than 0, using default..."
-                )
+                    "Warning: player_lives should be more "
+                    "than 0, using default..."
+                    )
                 data[key] = defaults[key]
             elif key not in ["highscore_file", "levels"] and data[key] < 1:
                 print(
                     f"Warning: {key} -> {data[key]} invalid, using default..."
-                )
+                    )
                 data[key] = defaults[key]
 
         if not isinstance(data.get("levels"), list):
             print(
-                "Warning: 'levels' value itself is missing or invalid, using default..."
+                "Warning: 'levels' value itself is missing "
+                "or invalid, using default..."
             )
             data["levels"] = defaults["levels"]
 
@@ -93,30 +92,28 @@ class ParseConfig:
                 width = level.get("width", None)
                 if not width:
                     width = 10
-                    print(
-                        f"Warning: levels[{i}].width is missing, using default..."
-                    )
+                    print(f"Warning: levels[{i}].width is missing, "
+                          "using default...")
 
                 if width < 1 or width > 900:
-                    print(
-                        f"Warning: levels[{i}].width value invalid, using default..."
-                    )
+                    print(f"Warning: levels[{i}].width value invalid, "
+                          "using default...")
                     width = 10
 
                 height = level.get("height", None)
                 if not height:
                     height = 10
-                    print(
-                        f"Warning: levels[{i}].height is missing, using default..."
-                    )
+                    print(f"Warning: levels[{i}].height is missing,"
+                          " using default...")
 
                 if height < 1 or height > 900:
                     print(
-                        f"Warning: levels[{i}].height value invalid, using default..."
+                        f"Warning: levels[{i}].height value invalid, "
+                        "using default..."
                     )
                     height = 10
 
                 data["levels"][i] = {"width": width, "height": height}
         validated = ValidJson.model_validate(data)
-        # model_dump make the output of model validate (basemodel object) a dictionnary
+        # modeldump make the output of model validate (basemodel object) a dict
         return validated.model_dump()

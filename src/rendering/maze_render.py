@@ -1,10 +1,23 @@
+"""Draw maze walls, collectibles, the player, and ghosts."""
+
 import pygame
 from .move import Mover
+from ..GameEngine.gosts import Ghost
+from ..GameEngine.player import Move, Player
+from ..Maze.Maze import Cell
 
 
 class MazeRender:
-    def __init__(self, maze, screen: pygame.Surface,
-                 player_step_ms: int = 200, ghost_step_ms: int = 400):
+    """Render a maze and interpolate the movement of its entities."""
+
+    def __init__(
+        self,
+        maze: list[list[Cell]],
+        screen: pygame.Surface,
+        player_step_ms: int = 200,
+        ghost_step_ms: int = 400,
+    ) -> None:
+        """Prepare maze geometry, sprites, and entity animation state."""
         self.maze = maze
         self.screen = screen
         self.rows = len(maze)
@@ -24,29 +37,34 @@ class MazeRender:
         self.player_step_ms = player_step_ms
         self.ghost_step_ms = ghost_step_ms
         # the game data this renderer draws (see bind_entities)
-        self.player = None
-        self.ghost_list = []
+        self.player: Player | None = None
+        self.ghost_list: list[Ghost] = []
         # the sprites on screen: one Mover per entity
-        self.player_mover = None
-        self.ghosts = {}
+        self.player_mover: Mover | None = None
+        self.ghosts: dict[int, Mover] = {}
         # --- maze design (only used by the wall drawing below) ---
-        self.wall_inner_color = (4, 4, 40)        # dark core of the walls
-        self.wall_glow_color = (0, 40, 255, 60)   # soft halo around the walls
-        self._wall_layer = None
-        self._wall_key = None
+        self.wall_inner_color = (4, 4, 40)
+        self.wall_glow_color = (0, 40, 255, 60)
+        self._wall_layer: pygame.Surface | None = None
+        self._wall_key: tuple[object, ...] | None = None
+        self.player_frames: dict[Move | None, list[pygame.Surface]] = {}
         self.score_font = pygame.font.Font(
             "assets/PressStart2P-Regular.ttf", 20
         )
         self._build_sprites()
 
-    def _grid_point(self, col, row):
-        """Pixel position of a grid intersection."""
+    def _grid_point(self, col: int, row: int) -> tuple[float, float]:
+        """Return the pixel position of a grid intersection."""
         top = self.radius + self.hud_height
-        return (int(col * self.cell_width) + self.radius,
-                int(row * self.cell_height) + top)
+        return (
+            int(col * self.cell_width) + self.radius,
+            int(row * self.cell_height) + top,
+        )
 
-    def _wall_segments(self):
-        """Every wall once (a shared wall between two cells is not doubled)."""
+    def _wall_segments(
+        self,
+    ) -> set[tuple[tuple[int, int], tuple[int, int]]]:
+        """Return each wall segment once, including shared cell boundaries."""
         segments = set()
         for row in range(self.rows):
             for col in range(self.cols):
@@ -61,22 +79,32 @@ class MazeRender:
                     segments.add(((col, row), (col, row + 1)))
         return segments
 
-    def _wall_signature(self):
-        """Changes whenever the size or any wall changes -> cache rebuild."""
+    def _wall_signature(self) -> tuple[object, ...]:
+        """Return a cache key for the current screen and maze geometry."""
         walls = tuple(
             (c.North, c.Est, c.South, c.West)
-            for line in self.maze for c in line
+            for line in self.maze
+            for c in line
         )
-        return (self.screen.get_size(), self.cell_width, self.cell_height,
-                self.wall_thinckness, self.wall_color, walls)
+        return (
+            self.screen.get_size(),
+            self.cell_width,
+            self.cell_height,
+            self.wall_thinckness,
+            self.wall_color,
+            walls,
+        )
 
-    def _build_wall_layer(self):
+    def _build_wall_layer(self) -> None:
+        """Render the maze walls into a cached transparent surface."""
         width, height = self.screen.get_size()
         t = self.wall_thinckness
         inner_t = max(1, t - 6)  # leaves a ~3px colored outline
 
-        lines = [(self._grid_point(*a), self._grid_point(*b))
-                 for a, b in self._wall_segments()]
+        lines = [
+            (self._grid_point(*a), self._grid_point(*b))
+            for a, b in self._wall_segments()
+        ]
         joints = {p for line in lines for p in line}
 
         # 1) glow: fat translucent lines, blurred by scaling down then up
@@ -110,7 +138,9 @@ class MazeRender:
         self._wall_layer = layer
         self._wall_key = self._wall_signature()
 
-    def draw_score(self):
+    def draw_score(self) -> None:
+        """Draw the player's score and remaining lives."""
+        assert self.player is not None
         score = f"Score: {self.player.score}"
         lives = f"Lives: {self.player.lives}"
         score_text = self.score_font.render(score, True, (255, 255, 0))
@@ -120,17 +150,20 @@ class MazeRender:
             lives_text, (self.screen_width - lives_text.get_width() - 10, 10)
         )
 
-    def draw(self):
+    def draw(self) -> None:
+        """Draw the cached walls, maze contents, and score display."""
         self.screen.fill((0, 0, 0))
 
         if self._wall_key != self._wall_signature():
             self._build_wall_layer()
+        assert self._wall_layer is not None
         self.screen.blit(self._wall_layer, (0, 0))
 
         self.draw_content()
         self.draw_score()
 
-    def cell_sizes(self):
+    def cell_sizes(self) -> tuple[float, float]:
+        """Return the width and height of a maze cell in pixels."""
         padding = 10
         available_width = self.screen_width - padding
         available_height = self.screen_height - padding - self.hud_height
@@ -139,13 +172,16 @@ class MazeRender:
         cell_height = available_height / self.rows
         return cell_width, cell_height
 
-    def _center(self, row, col):
+    def _center(self, row: int, col: int) -> tuple[float, float]:
+        """Return the pixel center of the cell at ``row`` and ``col``."""
         top = self.radius + self.hud_height
-        return ((col + 0.5) * self.cell_width + self.radius,
-                (row + 0.5) * self.cell_height + top)
+        return (
+            (col + 0.5) * self.cell_width + self.radius,
+            (row + 0.5) * self.cell_height + top,
+        )
 
-    def _build_sprites(self):
-        """Load and prepare every image once: disk is too slow per frame."""
+    def _build_sprites(self) -> None:
+        """Load and prepare sprite images once for use during rendering."""
         size = int(min(self.cell_width, self.cell_height) * 0.8)
         frames = [
             pygame.transform.scale(
@@ -154,7 +190,13 @@ class MazeRender:
             )
             for img in self.player_images
         ]
-        angles = {None: 0, "UP": 270, "DOWN": 90, "LEFT": 0, "RIGHT": 180}
+        angles: dict[Move | None, int] = {
+            None: 0,
+            "UP": 270,
+            "DOWN": 90,
+            "LEFT": 0,
+            "RIGHT": 180,
+        }
         self.player_frames = {
             move: [pygame.transform.rotate(frame, angle) for frame in frames]
             for move, angle in angles.items()
@@ -170,8 +212,8 @@ class MazeRender:
                 r, g, b, a = self.weak_ghost.get_at((x, y))
                 self.weak_ghost.set_at((x, y), (b, g, r, a))  # swap red/blue
 
-    def bind_entities(self, player, ghosts):
-        """Give the renderer its data, the sprites start on their cells."""
+    def bind_entities(self, player: Player, ghosts: list[Ghost]) -> None:
+        """Bind player and ghost state and place their sprites on the grid."""
         self.player = player
         self.ghost_list = ghosts
         self.player_mover = Mover(
@@ -182,20 +224,26 @@ class MazeRender:
             for ghost in ghosts
         }
 
-    def snap_ghost(self, ghost, now):
+    def snap_ghost(self, ghost: Ghost, now: int) -> None:
+        """Place one ghost instantly at its logical position."""
         self.ghosts[ghost.id].snap(self._center(*ghost.position), now)
 
-    def snap_all(self, now):
+    def snap_all(self, now: int) -> None:
+        """Place the player and ghosts at their logical positions."""
+        assert self.player is not None
+        assert self.player_mover is not None
         self.player_mover.snap(self._center(*self.player.position), now)
         for ghost in self.ghost_list:
             self.snap_ghost(ghost, now)
 
-    def update_entities(self, now):
+    def update_entities(self, now: int) -> None:
         """Move every sprite towards its logical cell. Call once per frame.
 
         Reads ghost.position directly: a cell has room for one ghost_id only,
         so two ghosts on the same cell would lose one of them.
         """
+        assert self.player is not None
+        assert self.player_mover is not None
         self.player_mover.set_target(self._center(*self.player.position), now)
         self.player_mover.update(now)
         for ghost in self.ghost_list:
@@ -205,7 +253,10 @@ class MazeRender:
             mover.set_target(self._center(*ghost.position), now)
             mover.update(now)
 
-    def draw_content(self):
+    def draw_content(self) -> None:
+        """Draw collectibles and animate the player and ghost sprites."""
+        assert self.player is not None
+        assert self.player_mover is not None
         now = pygame.time.get_ticks()
 
         if now - self.last_anim_time >= self.anim_delay:
@@ -220,11 +271,15 @@ class MazeRender:
             for col in range(self.cols):
                 cell = self.maze[row][col]
                 if cell.supgum:
-                    pygame.draw.circle(self.screen, self.dot_color,
-                                       self._center(row, col), big_dot)
+                    pygame.draw.circle(
+                        self.screen, self.dot_color,
+                        self._center(row, col), big_dot,
+                    )
                 elif cell.gum:
-                    pygame.draw.circle(self.screen, self.dot_color,
-                                       self._center(row, col), small_dot)
+                    pygame.draw.circle(
+                        self.screen, self.dot_color,
+                        self._center(row, col), small_dot,
+                    )
 
         image = self.player_frames[self.player.facing][self.state_counter]
         pos = self.player_mover.pos

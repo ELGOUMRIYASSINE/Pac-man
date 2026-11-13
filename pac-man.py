@@ -1,8 +1,7 @@
+"""Start Pac-Man by loading its configuration and launching the game loop."""
+
 from src.Parsing.parse_config_file import ParseConfig
-from src.Highscore_system.get_highscore import HighScore
-from src.GameEngine.player import Player
 from src.GameEngine.Game_loop import GameLoop
-from src.Maze.Maze import Maze
 from src.metadata import MetaData
 
 if __name__ == "__main__":

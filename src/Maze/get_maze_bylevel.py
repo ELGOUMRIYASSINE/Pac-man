@@ -1,18 +1,19 @@
+"""Generate deterministic maze layouts for the configured game levels."""
+
 from mazegenerator import MazeGenerator
 from dataclasses import dataclass
 from ..metadata import MetaData
 
-"""
-This class returns a list of MazeGenerator objects,
-those objects represent a maze object for each level
-"""
-
 
 @dataclass
 class LevelMaze:
+    """Create a maze generator configured for a particular level."""
 
     @classmethod
-    def get_maze_bylevel(cls, level, metadata) -> MazeGenerator:
+    def get_maze_bylevel(
+        cls, level: int, metadata: MetaData
+    ) -> MazeGenerator:
+        """Build and return the maze generator for ``level``."""
         height = metadata.get_height(level)
         width = metadata.get_width(level)
         try:

@@ -1,9 +1,15 @@
+"""Render the game's welcome page and its sample high-score list."""
+
 import pygame
 
 
 class EntryFace:
-    def __init__(self, screen, height, width):
-        # get some names just for test
+    """Draw the opening screen and a short list of high scores."""
+
+    def __init__(
+        self, screen: pygame.Surface, height: int, width: int
+    ) -> None:
+        """Prepare fonts and the high scores shown on the opening screen."""
         pygame.font.init()
         self.screen = screen
         self.height = height
@@ -29,7 +35,8 @@ class EntryFace:
             ("goldfish", 20),
         ]
 
-    def draw_scores(self, header_rect):
+    def draw_scores(self, header_rect: pygame.Rect) -> None:
+        """Draw each sample score below the high-score heading."""
         line_spacing = self.font_body.get_linesize()
         start_y = header_rect.bottom + 40
         for i, (name, score) in enumerate(self.highscores):
@@ -40,7 +47,8 @@ class EntryFace:
             )
             self.screen.blit(line_surf, line_rect)
 
-    def draw(self):
+    def draw(self) -> None:
+        """Draw the title, high scores, and blinking start prompt."""
         title = self.font_title.render("Pac-Man", True, self.yellow)
         title_rect = title.get_rect(center=(self.width // 2, self.height // 5))
         self.screen.blit(title, title_rect)

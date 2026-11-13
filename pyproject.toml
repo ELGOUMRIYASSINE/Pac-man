@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "cleanpy>=0.5.1",
+    "flake8>=7.5.0",
+    "lint>=1.2.1",
     "mazegenerator>=1.2.1",
+    "mypy>=2.4.1",
     "pydantic>=2.13.5",
     "pygame>=2.6.1",
 ]

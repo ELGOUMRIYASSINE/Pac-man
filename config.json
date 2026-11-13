@@ -15,7 +15,7 @@
     "levels": [
         {
             "height": 15,
-            "width": 15  },
+            "width": 15},
         {
             "width": 6,
             "height": 6
@@ -53,7 +53,7 @@
             "height": 7
         }
     ],
-    "player_lives": 20,
+    "player_lives": -20,
     "pacgum_points": -13,
     "supergum_points": 37,
     "gost_points": 65

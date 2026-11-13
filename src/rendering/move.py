@@ -1,11 +1,14 @@
+"""Interpolate sprite movement and measure collisions during a frame."""
+
 import pygame
 from pygame.math import Vector2
 
 
 class Mover:
-    """Slides a sprite between grid cells over a fixed duration (ms)."""
+    """Interpolate a sprite between grid cells over a fixed duration."""
 
-    def __init__(self, pos, duration: int) -> None:
+    def __init__(self, pos: tuple[float, float], duration: int) -> None:
+        """Initialize the sprite at ``pos`` with a movement duration."""
         self.start = Vector2(pos)
         self.target = Vector2(pos)
         self.pos = Vector2(pos)
@@ -13,16 +16,17 @@ class Mover:
         self.duration = duration
         self.t0 = pygame.time.get_ticks() - duration
 
-    def set_target(self, new_target, now: int) -> None:
-        new_target = Vector2(new_target)
-        if new_target == self.target:
+    def set_target(self, new_target: tuple[float, float], now: int) -> None:
+        """Begin moving toward a new pixel position at time ``now``."""
+        target = Vector2(new_target)
+        if target == self.target:
             return
         self.start = Vector2(self.pos)
-        self.target = new_target
+        self.target = target
         self.t0 = now
 
-    def snap(self, pos, now: int) -> None:
-        """Teleport with no sliding (respawn): never crosses the walls."""
+    def snap(self, pos: tuple[float, float], now: int) -> None:
+        """Move instantly to ``pos`` without interpolating across the maze."""
         self.start = Vector2(pos)
         self.target = Vector2(pos)
         self.pos = Vector2(pos)
@@ -30,10 +34,11 @@ class Mover:
         self.t0 = now - self.duration
 
     def progress(self, now: int) -> float:
-        """How far along the current step: 0.0 = just left, 1.0 = arrived."""
+        """Return movement progress from start (0.0) to arrival (1.0)."""
         return max(0.0, min(1.0, (now - self.t0) / self.duration))
 
     def update(self, now: int) -> Vector2:
+        """Advance the sprite and return its current pixel location."""
         self.previous = self.pos
         self.pos = self.start.lerp(self.target, self.progress(now))
         return self.pos

@@ -1,10 +1,15 @@
+"""Player state and movement rules for the maze game."""
+
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Literal, Optional, Tuple
 
 from ..Maze.Maze import Cell, MetaData
 
+Move = Literal["UP", "DOWN", "LEFT", "RIGHT"]
+LevelStatus = Literal["RESPOWN", "LOSE", "CON", "END", "NEXT"]
+
 # move -> (row change, column change, wall that blocks it)
-MOVES = {
+MOVES: dict[Move, tuple[int, int, str]] = {
     "UP": (-1, 0, "North"),
     "DOWN": (1, 0, "South"),
     "LEFT": (0, -1, "West"),
@@ -14,6 +19,8 @@ MOVES = {
 
 @dataclass
 class Player:
+    """Track a player's position, score, lives, and active power state."""
+
     lives: int = 6
     positionx: int = 0
     positiony: int = 0
@@ -23,44 +30,58 @@ class Player:
     score: int = 0
     super_power: bool = False
     super_until: int = 0
-    facing: Optional[str] = None   # last real move, the sprite rotates with it
+    facing: Optional[Move] = None
 
 
 class MovePlayer:
+    """Apply player movement and update maze-level game state."""
+
     SUPER_POWER_MS = 7000
 
-    def can_move(self, move: str, player: Player, data: MetaData,
-                 maze: List[List[Cell]]) -> bool:
-        d_row, d_col, wall = MOVES[move]
-        row = player.positiony + d_row
-        col = player.positionx + d_col
+    def can_move(
+        self,
+        move: Move,
+        player: Player,
+        data: MetaData,
+        maze: list[list[Cell]],
+    ) -> bool:
+        """Return whether the player can step in the requested direction."""
+        move_row, move_col, direct = MOVES[move]
+        row = player.positiony + move_row
+        col = player.positionx + move_col
         return (
             0 <= row < data.get_height(player.level)
             and 0 <= col < data.get_width(player.level)
-            and not getattr(maze[player.positiony][player.positionx], wall)
+            and not getattr(maze[player.positiony][player.positionx], direct)
         )
 
-    def move_player(self, move: str, player: Player, data: MetaData,
-                    maze: List[List[Cell]]) -> bool:
-        """One logical step. Returns False when a wall blocks it.
+    def move_player(
+        self,
+        move: Move,
+        player: Player,
+        data: MetaData,
+        maze: list[list[Cell]],
+    ) -> bool:
+        """Move the player one logical step unless a wall blocks the way.
 
         Nothing is eaten and nobody dies here: the sprite has not arrived
-        yet. See eat_cell() and GameLoop.check_collision().
+        yet. Gum collection and collisions are handled after the sprite moves.
         """
         if not self.can_move(move, player, data, maze):
             return False
-        d_row, d_col, _ = MOVES[move]
+        move_row, move_col, _ = MOVES[move]
         maze[player.positiony][player.positionx].has_player = False
-        player.positiony += d_row
-        player.positionx += d_col
+        player.positiony += move_row
+        player.positionx += move_col
         player.position = (player.positiony, player.positionx)
         maze[player.positiony][player.positionx].has_player = True
         player.facing = move
         return True
 
-    def eat_cell(self, player: Player, data: MetaData,
-                 maze: List[List[Cell]], now: int) -> bool:
-        """Eat what is on the player's cell. True if it was a super gum."""
+    def eat_gum(
+        self, player: Player, data: MetaData, maze: list[list[Cell]], now: int
+    ) -> bool:
+        """Collect gum and return whether the player found super gum."""
         cell = maze[player.positiony][player.positionx]
         if cell.gum:
             player.score += data.get_pacgum_points()
@@ -73,8 +94,10 @@ class MovePlayer:
             return True
         return False
 
-    def check_level(self, player: Player, data: MetaData,
-                    maze: List[List[Cell]]) -> str:
+    def check_level(
+        self, player: Player, data: MetaData, maze: list[list[Cell]]
+    ) -> LevelStatus:
+        """Return the transition required by the player's current state."""
         if player.dead:
             return "RESPOWN" if player.lives > 1 else "LOSE"
         if any(cell.gum or cell.supgum for row in maze for cell in row):

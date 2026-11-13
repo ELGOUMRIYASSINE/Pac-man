@@ -1,3 +1,5 @@
+"""Pathfinding and movement decisions for maze ghosts."""
+
 from ..Maze.Maze import Cell, Tuple, List, dataclass, Ghost
 from collections import deque
 from typing import Optional
@@ -5,6 +7,7 @@ from typing import Optional
 
 @dataclass
 class MoveGhost:
+    """Choose reachable cells and paths for ghosts."""
 
     def _get_neighboars(
         self,
@@ -12,6 +15,7 @@ class MoveGhost:
         maze: List[List[Cell]],
         h_w: Tuple[int, int],
     ) -> List[Tuple[int, int]]:
+        """Return adjacent cells reachable from the given position."""
         x = position[1]
         y = position[0]
         height = h_w[0]
@@ -35,6 +39,7 @@ class MoveGhost:
         ghost: Ghost,
         end: Tuple[int, int],
     ) -> bool:
+        """Find and store the shortest path from a ghost to a target cell."""
         ghost.neighboars = []
         parents = {start: start}
         queue = deque([start])
@@ -67,13 +72,12 @@ class MoveGhost:
         h_w: Tuple[int, int],
         player_position: Tuple[int, int],
     ) -> Optional[Tuple[int, int]]:
-        """Where the ghost goes on its next step (None = stay).
+        """Choose the ghost's next cell, or ``None`` if it should stay.
 
-        - weak ghost: runs away from the player
-        - even id: follows the shortest path (BFS)
-        - odd id: takes the neighbour closest to the player
-        Weak and odd ghosts never turn back unless it is a dead end, otherwise
-        they shake forever between two cells.
+        Weak ghosts move away from the player. Active even-numbered ghosts use
+        breadth-first search, while odd-numbered ghosts choose the closest
+        available neighbor. Weak and odd-numbered ghosts avoid reversing
+        direction unless they reach a dead end.
         """
         if ghost.position == player_position:
             return None
@@ -89,8 +93,11 @@ class MoveGhost:
             return None
 
         def distance(cell: Tuple[int, int]) -> int:
-            return (abs(cell[0] - player_position[0])
-                    + abs(cell[1] - player_position[1]))
+            """Measure the grid distance from a candidate cell to the player."""
+            return (
+                abs(cell[0] - player_position[0])
+                + abs(cell[1] - player_position[1])
+            )
 
         return max(moves, key=distance) if ghost.weak else min(
             moves, key=distance

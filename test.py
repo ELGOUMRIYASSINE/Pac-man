@@ -1,3 +1,5 @@
+"""Run a small standalone Pygame movement experiment."""
+
 import pygame
 import inspect
 pygame.init()
@@ -53,5 +55,4 @@ while run:
     pygame.display.update()
 
 pygame.quit()
-
 
